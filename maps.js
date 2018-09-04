@@ -13,9 +13,10 @@ import {API_call} from './world-bank.js';
 
 //Loading Google Charts
 google.charts.load('current', {
-    'packages':['geochart']
+    'packages':['geochart'],
     // Note: you will need to get a mapsApiKey for your project.
     // See: https://developers.google.com/chart/interactive/docs/basic_load_libs#load-settings
+    'mapsApiKey': 'AIzaSyDlQHFy9yyAHKvOG-s-DB4y1Ifnfe_Ge-w'
   });
   
 function drawRegionsMap() {
