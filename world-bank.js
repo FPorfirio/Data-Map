@@ -17,7 +17,7 @@ API_call.request =  function(url) {
                 reject(req.statusText);
             }
         }
-        req.open('GET', "http://api.worldbank.org/v2/indicators?format=json&pages=50");
+        req.open('GET', "http://api.worldbank.org/v2/sources/2/indicators?format=json&per_page=200");
         req.send();
     })
 }
