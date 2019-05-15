@@ -14,17 +14,39 @@
     <main>
         <div class="fuckthis"></div>
         <div class="shot"></div>
-        <div id="form">
-            <form action="" method="get">
-                <select name="" id="indicator"></select>
-                <select name="" id="year"></select>
+        <div class="formContainer">
+            <form class="form" action="" method="get">
+                <input type="hidden" name="indicatorID">
+                <input type="number" name="year" id="">
+                <input type="text" name="region" id="">
                 <button type="submit"></button>
             </form>
+        </div>
+        <div class="mapInfoDisplay">
+            <div class="yearBox">
+                <ul>
+                    <li>
+                        
+                    </li>
+                    <li>
+                        
+                    </li>
+                </ul>
+            </div>
+            <div class="countriesBox">
+                <ul>
+                    
+                </ul>
+            </div>
+            <div class="indicatorBox">
+
+            </div>
         </div>
         <div id="maps"></div>
     </main>
     <footer>
     </footer>
-    <script type="module" src="./maps.js"></script>
+    <script type="module"  src="./maps.js"></script>
+    <script type="module"  src="./index.js"></script>
 </body>
 </html>
