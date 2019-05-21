@@ -71,16 +71,53 @@ const submision = (function(){
     const inputs = document.getElementsByClassName('form')[0].children;
 
     form.addEventListener('submit', formHandler)
+    
+
+    function formValidation(year, region, indicator){
+        const errorMessage = document.querySelector('.errorBox .errorMessage');
+        let errorStr = "Please enter";
+        if(!year||!country||!indicator){
+            if(!year){
+                errorStr += "year";
+            }
+            if(!region){
+                errorStr += "country"
+            }
+            if(!indicator){
+                errorStr += "indicator"
+            }
+            errorMessage.textContent = errorStr;
+            return true
+        }
+    }
 
     function formHandler(e){
-        let indicatorId = inputs[0].value
-        let date = inputs[1].value;
-        let countries = inputs[2].value;
-        e.preventDefault()
-        let queryStringParams = `https://api.worldbank.org/v2/countries/${countries}/indicators/${indicatorId}?date=${date}&format=json&per_page=400`
+
+
+        function formatYearValue(year){
+            const regExp = /[0-9]{4}/gi;
+            const value = regExp.match(year)
+            if(value.length == 2){
+                return `${value[0]}:${value[1]}`
+            }
+            else{
+                return `${value[0]}`
+            }
+        }
+
+        e.preventDefault();
+        let indicatorId = inputs[0].value;
+        let year = formatYearValue(inputs[1]);
+        let region = inputs[2].value;
+
+        if(formValidation(year, region, indicatorId)){
+            return 
+        }
+        console.log(formValidation(year, region, indicatorId))
+        let queryStringParams = `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400`;
         
             
-        API_request(queryStringParams).then(handler)
+        API_request(queryStringParams).then(handler);
     }
 
     })

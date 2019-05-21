@@ -16,9 +16,9 @@
         <div class="shot"></div>
         <div class="formContainer">
             <form class="form" action="" method="get">
-                <input type="hidden" name="indicatorID">
-                <input type="number" name="year" id="">
-                <input type="text" name="region" id="">
+                <input type="hidden" name="indicatorID" required>
+                <input type="hidden" type="number" name="year" required>
+                <input type="hidden" name="region" required>
                 <button type="submit"></button>
             </form>
         </div>
@@ -26,10 +26,10 @@
             <div class="yearBox">
                 <ul>
                     <li>
-                        
+                        <span class="yearBox__value">From:</span>
                     </li>
                     <li>
-                        
+                        <span class="yearBox__value">To:</span>
                     </li>
                 </ul>
             </div>
@@ -40,6 +40,9 @@
             </div>
             <div class="indicatorBox">
 
+            </div>
+            <div class="errorBox">
+                <span class="errorMessage"></span>
             </div>
         </div>
         <div id="maps"></div>

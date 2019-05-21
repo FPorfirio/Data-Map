@@ -53,13 +53,19 @@ function decompose(group){
 
 //creating element for indicator selection
 function indicatorCallback(event){
-    const indicatorId = event.target.dataset.id
+    const indicatorId = event.target.dataset.id;
     inputs[0].value =  indicatorId;
+
     const indicatorContainer = document.querySelector('.mapInfoDisplay .indicatorBox')
-    const span = document.createElement('span');
-    span.classList.add('indicator')
-    span.textContent = event.target.textContent
-    indicatorContainer.appendChild(span);
+    if(indicatorContainer.firstElementChild){
+        indicatorContainer.firstElementChild.textContent = event.target.textContent;
+    }
+    else{
+        const span = document.createElement('span');
+        span.classList.add('indicator')
+        span.textContent = event.target.textContent;
+        indicatorContainer.appendChild(span);
+    }
 }
 
 
@@ -118,21 +124,18 @@ const addCountries = (function(){
 
 const mapInfo = (function(){
     const mapInfoDisplay = document.getElementsByClassName('mapInfoDisplay')[0]
-    const year = mapInfoDisplay[0];
-    const countries = mapInfoDisplay[1];
-    const indicator = mapInfoDisplay[2]
     mapInfoDisplay.addEventListener('click', (e) => {
         console.log(e.target)
         if(e.target.classList.contains('indicator')){
             const CountryContainer = document.querySelector('.mapInfoDisplay .indicatorBox');
-            inputs[0].value = inputs.value.replace();
+            inputs[0].value = "";
             CountryContainer.removeChild(e.target)
             console.log('sheet')
         }
         if(e.target.classList.contains('countries')){
             const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul');
             const countryValue = e.target.dataset.id;
-            const regexp = new RegExp(`${countryValue};*`);
+            const regexp = new RegExp(`^(${countryValue};|;*${countryValue})`);
             const updatedInput = inputs[2].value.replace(regexp, "");
             inputs[2].value = updatedInput;
             CountryContainer.removeChild(e.target)
