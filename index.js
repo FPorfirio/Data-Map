@@ -83,9 +83,24 @@ const addYears = (function(){
     mainClass.appendChild(select);
 
     function yearCallback(event){
-        let yearValue = event.target.value;
-        console.log(inputs[1])
-        inputs[1].value = yearValue;
+        const yearValue = event.target.value;
+        const yearInput = inputs[1].value;
+        const yearArray = yearInput.split(':');
+        
+        if(yearInput == false){
+            inputs[1].value = yearValue;
+            console.log('first')
+        }
+        else if (yearArray.length == 1){
+            inputs[1].value = `${yearInput}:${yearValue}`;
+            console.log('second')
+        }
+        else{
+            const match = inputs[1].value.replace()
+            console.log('third')
+            yearArray[1] = yearValue;
+            inputs[1].value = yearArray.join(':');
+        }
     }    
 })()
 
@@ -124,6 +139,7 @@ const addCountries = (function(){
 
 const mapInfo = (function(){
     const mapInfoDisplay = document.getElementsByClassName('mapInfoDisplay')[0]
+   
     mapInfoDisplay.addEventListener('click', (e) => {
         console.log(e.target)
         if(e.target.classList.contains('indicator')){
@@ -142,6 +158,7 @@ const mapInfo = (function(){
             console.log(e.target,countryValue, regexp)
         }
     })
+
 })()
 
 

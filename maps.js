@@ -28,14 +28,14 @@ google.charts.load('current', {
     'mapsApiKey': 'AIzaSyC3nKl9HH4SNYVPm0A_bGXj4bt5ItWQtv4'
   });
   
-function drawRegionsMap(regions, descriptions) {
+function drawRegionsMap(regions, descriptions, elementContainer) {
   var data = new google.visualization.DataTable();
   data.addColumn('string', 'mitch');
   data.addColumn('number', descriptions);
   data.addRows(regions)
   var options = {'width': 1200, 'height': 1200};
 
-  var chart = new google.visualization.GeoChart(document.getElementById('maps'));
+  var chart = new google.visualization.GeoChart(elementContainer);
 
   chart.draw(data, options);
 }
@@ -46,37 +46,54 @@ var handler = (data) => {
     console.log(data)
     const response = data[1]
 
-    const regExp = /[^\n\(\)]+(?=\)\n{0,1})/gi;
-    const regExp2 = /^[^\n\(\)]+(\([^\n\(\)]+\))*(?!:)/gi;
-    const finalreg1 = /(^[^\n\(\)]+(?:\([^\n\(\)]+\))*(?!:))\s*(\([^\n]+)/i;
     const finalreg = /(^[^\n\(\)]+(?:\([^\n\(\)]+\))*)\s*(\([^\n]+\))|[^\n]+$/i
     const IndicatorMetaData = response[0].indicator.value.match(finalreg);
 
     console.log(IndicatorMetaData)
     const IndicatorDescription =  IndicatorMetaData[2];
-    
-    for(var i = 0; i < response.length; i++){
+    const maps = document.getElementById('maps');
+
+    const dataSet = (function(){
+        const dataSet = {    
+        }
+
+        for(var i = 0; i < response.length; i++){
+            let date = response[i].date;
+            if(!dataSet.hasOwnProperty(date)){
+                dataSet[date] = [];
+            }
+            dataSet[date].push([response[i].country.value, Math.round(response[i].value)])
+        } 
+
+        return dataSet;
+    })()
+
+    for(var arr in dataSet){
+        let mapContainer = document.createElement('div');
+        mapContainer.classList.add(arr)
+        maps.appendChild(mapContainer);
+        google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainer));
+    }
+
+    /*for(var i = 0; i < response.length; i++){
         countries.push([response[i].country.value, Math.round(response[i].value)]);
     }       
-    google.charts.setOnLoadCallback(drawRegionsMap(countries, IndicatorDescription));
+    google.charts.setOnLoadCallback(drawRegionsMap(countries, IndicatorDescription));*/
 }
 
 
 
 
 const submision = (function(){
-
-    return new Promise((resolve, reject) =>{
+    
     const form = document.getElementsByClassName('form')[0];
     const inputs = document.getElementsByClassName('form')[0].children;
-
     form.addEventListener('submit', formHandler)
     
-
     function formValidation(year, region, indicator){
         const errorMessage = document.querySelector('.errorBox .errorMessage');
         let errorStr = "Please enter";
-        if(!year||!country||!indicator){
+        if(!year||!region||!indicator){
             if(!year){
                 errorStr += "year";
             }
@@ -92,22 +109,9 @@ const submision = (function(){
     }
 
     function formHandler(e){
-
-
-        function formatYearValue(year){
-            const regExp = /[0-9]{4}/gi;
-            const value = regExp.match(year)
-            if(value.length == 2){
-                return `${value[0]}:${value[1]}`
-            }
-            else{
-                return `${value[0]}`
-            }
-        }
-
         e.preventDefault();
         let indicatorId = inputs[0].value;
-        let year = formatYearValue(inputs[1]);
+        let year = inputs[1].value;
         let region = inputs[2].value;
 
         if(formValidation(year, region, indicatorId)){
@@ -115,13 +119,9 @@ const submision = (function(){
         }
         console.log(formValidation(year, region, indicatorId))
         let queryStringParams = `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400`;
-        
-            
+    
         API_request(queryStringParams).then(handler);
     }
-
-    })
-
 })()
 
 
