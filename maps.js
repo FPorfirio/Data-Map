@@ -9,8 +9,17 @@ const API_request =  function(url) {
                 resolve(JSON.parse(req.response));
             }
             else{
-                reject(req.statusText);
+                reject({
+                    status: req.status,
+                    statusText: req.statusText
+                });
             }
+        }
+        req.onerror = function() {
+            reject({
+                status: this.status,
+                statusText: req.statusText
+            });
         }
         req.open('GET', url, true);
         req.send();
@@ -42,7 +51,6 @@ function drawRegionsMap(regions, descriptions, elementContainer) {
 
 
 var handler = (data) => {
-    let countries = [];
     console.log(data)
     const response = data[1]
 
@@ -67,26 +75,21 @@ var handler = (data) => {
 
         return dataSet;
     })()
-
+    
     for(var arr in dataSet){
         let mapContainer = document.createElement('div');
         mapContainer.classList.add(arr)
         maps.appendChild(mapContainer);
         google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainer));
     }
-
-    /*for(var i = 0; i < response.length; i++){
-        countries.push([response[i].country.value, Math.round(response[i].value)]);
-    }       
-    google.charts.setOnLoadCallback(drawRegionsMap(countries, IndicatorDescription));*/
+       
 }
 
 
 
 
 const submision = (function(){
-    
-    const form = document.getElementsByClassName('form')[0];
+    const form = document.getElementsByClassName('form')[0]
     const inputs = document.getElementsByClassName('form')[0].children;
     form.addEventListener('submit', formHandler)
     
@@ -108,19 +111,26 @@ const submision = (function(){
         }
     }
 
+    var prevIndicatorId;
+    var prevDate;
+    var prevRegion;
     function formHandler(e){
         e.preventDefault();
         let indicatorId = inputs[0].value;
         let year = inputs[1].value;
         let region = inputs[2].value;
-
+        if(prevIndicatorId == indicatorId && prevDate == year && region == prevRegion){
+            console.log('no new inputs detected');
+        }
+        prevIndicatorId = indicatorId;
+            prevDate = year;
+            prevRegion = region;
         if(formValidation(year, region, indicatorId)){
             return 
         }
-        console.log(formValidation(year, region, indicatorId))
+
         let queryStringParams = `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400`;
-    
-        API_request(queryStringParams).then(handler);
+        API_request(queryStringParams).then(handler).catch((e)=>(console.log('errpr:',e)));
     }
 })()
 

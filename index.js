@@ -1,6 +1,7 @@
 import { obj } from './world-bank.js'
 import {isoJson} from './country_iso_codes.js'
 console.log(isoJson)
+const yearContainer = document.querySelector('.mapInfoDisplay .yearBox ul li')[0];
 
 const mainClass = document.getElementsByClassName('fuckthis')[0];
 const inputs = document.getElementsByClassName('form')[0].children;
@@ -71,7 +72,9 @@ function indicatorCallback(event){
 
 //Creating element for year selection
 const addYears = (function(){
+    const yearContainer = document.getElementsByClassName('yearBox__value');
     let select = document.createElement('select');
+    console.log(yearContainer[0])
 
     for(let i = 1960; i <= 2016; i++){
         let option =  document.createElement('option');
@@ -87,19 +90,18 @@ const addYears = (function(){
         const yearInput = inputs[1].value;
         const yearArray = yearInput.split(':');
         
-        if(yearInput == false){
+        if(!yearInput){
             inputs[1].value = yearValue;
-            console.log('first')
+            yearContainer[0].textContent = yearValue
         }
-        else if (yearArray.length == 1){
+        else if (yearInput && !yearArray[1]){
             inputs[1].value = `${yearInput}:${yearValue}`;
-            console.log('second')
+            yearContainer[1].textContent = yearValue
         }
         else{
-            const match = inputs[1].value.replace()
-            console.log('third')
             yearArray[1] = yearValue;
             inputs[1].value = yearArray.join(':');
+            yearContainer[1].textContent = yearValue
         }
     }    
 })()
@@ -143,20 +145,27 @@ const mapInfo = (function(){
     mapInfoDisplay.addEventListener('click', (e) => {
         console.log(e.target)
         if(e.target.classList.contains('indicator')){
-            const CountryContainer = document.querySelector('.mapInfoDisplay .indicatorBox');
             inputs[0].value = "";
-            CountryContainer.removeChild(e.target)
+            e.target.remove();
             console.log('sheet')
         }
         if(e.target.classList.contains('countries')){
-            const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul');
             const countryValue = e.target.dataset.id;
-            const regexp = new RegExp(`^(${countryValue};|;*${countryValue})`);
+            const regexp = new RegExp(`^${countryValue};|;*${countryValue}`);
             const updatedInput = inputs[2].value.replace(regexp, "");
             inputs[2].value = updatedInput;
-            CountryContainer.removeChild(e.target)
+            e.target.remove()
             console.log(e.target,countryValue, regexp)
         }
+        if(e.target.classList.contains('yearBox__value')){
+            const yearContainer = document.getElementsByClassName('yearBox__value');
+            const dateValue = e.target.textContent;
+            e.target.textContent = "";
+            const regexp = new RegExp(`^${dateValue}:|:*${dateValue}`);
+            const updatedInput = inputs[1].value.replace(regexp,"");
+            inputs[1].value = updatedInput;
+        }
+        
     })
 
 })()
