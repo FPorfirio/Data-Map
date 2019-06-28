@@ -87,21 +87,20 @@ const addYears = (function(){
 
     function yearCallback(event){
         const yearValue = event.target.value;
-        const yearInput = inputs[1].value;
-        const yearArray = yearInput.split(':');
+        const yearFromInput = inputs[1].value;
+        const yearToInput = inputs[2].value;
         
-        if(!yearInput){
+        if(!yearFromInput){
             inputs[1].value = yearValue;
-            yearContainer[0].textContent = yearValue
+            yearContainer[0].textContent = yearValue;
         }
-        else if (yearInput && !yearArray[1]){
-            inputs[1].value = `${yearInput}:${yearValue}`;
-            yearContainer[1].textContent = yearValue
+        else if (yearFromInput && !yearToInput){
+            inputs[2].value = yearValue;
+            yearContainer[1].textContent = yearValue;
         }
         else{
-            yearArray[1] = yearValue;
-            inputs[1].value = yearArray.join(':');
-            yearContainer[1].textContent = yearValue
+            inputs[2].value = yearValue;
+            yearContainer[1].textContent = yearValue;
         }
     }    
 })()
@@ -126,7 +125,7 @@ const addCountries = (function(){
         countryValues.push(e.target.value);
         console.log(e.target.options[e.target.selectedIndex])
         const valueStr = countryValues.join(';');
-        inputs[2].value = valueStr;
+        inputs[3].value = valueStr;
         console.log(inputs);
 
 
@@ -143,31 +142,29 @@ const mapInfo = (function(){
     const mapInfoDisplay = document.getElementsByClassName('mapInfoDisplay')[0]
    
     mapInfoDisplay.addEventListener('click', (e) => {
-        console.log(e.target)
         if(e.target.classList.contains('indicator')){
             inputs[0].value = "";
             e.target.remove();
-            console.log('sheet')
         }
         if(e.target.classList.contains('countries')){
             const countryValue = e.target.dataset.id;
             const regexp = new RegExp(`^${countryValue};|;*${countryValue}`);
-            const updatedInput = inputs[2].value.replace(regexp, "");
-            inputs[2].value = updatedInput;
+            const updatedInput = inputs[3].value.replace(regexp, "");
+            inputs[3].value = updatedInput;
             e.target.remove()
-            console.log(e.target,countryValue, regexp)
         }
         if(e.target.classList.contains('yearBox__value')){
             const yearContainer = document.getElementsByClassName('yearBox__value');
             const dateValue = e.target.textContent;
             e.target.textContent = "";
-            const regexp = new RegExp(`^${dateValue}:|:*${dateValue}`);
-            const updatedInput = inputs[1].value.replace(regexp,"");
-            inputs[1].value = updatedInput;
-        }
-        
+            if(e.target == yearContainer[0]){
+                inputs[1].value = ""
+            }
+            else{
+                inputs[2].value = "";
+            }  
+        }    
     })
-
 })()
 
 

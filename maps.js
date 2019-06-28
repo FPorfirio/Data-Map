@@ -1,24 +1,24 @@
 //Calling world-bank Api
 
 
-const API_request =  function(url) {       
+ function API_request(url) {       
     return new Promise((resolve, reject) => {
         var req = new XMLHttpRequest;
         req.onload = function(){
-            if(req.status == 200){
-                resolve(JSON.parse(req.response));
+            if(this.status == 200){
+                resolve(JSON.parse(this.response));
             }
             else{
                 reject({
-                    status: req.status,
-                    statusText: req.statusText
+                    status: this.status,
+                    statusText: this.statusText
                 });
             }
         }
         req.onerror = function() {
             reject({
                 status: this.status,
-                statusText: req.statusText
+                statusText: this.statusText
             });
         }
         req.open('GET', url, true);
@@ -50,7 +50,7 @@ function drawRegionsMap(regions, descriptions, elementContainer) {
 }
 
 
-var handler = (data) => {
+function handler(data){
     console.log(data)
     const response = data[1]
 
@@ -75,6 +75,9 @@ var handler = (data) => {
 
         return dataSet;
     })()
+
+    document.createElement('range');
+    
     
     for(var arr in dataSet){
         let mapContainer = document.createElement('div');
@@ -95,36 +98,50 @@ const submision = (function(){
     
     function formValidation(year, region, indicator){
         const errorMessage = document.querySelector('.errorBox .errorMessage');
-        let errorStr = "Please enter";
-        if(!year||!region||!indicator){
-            if(!year){
-                errorStr += "year";
-            }
-            if(!region){
-                errorStr += "country"
-            }
-            if(!indicator){
-                errorStr += "indicator"
-            }
-            errorMessage.textContent = errorStr;
-            return true
+        errorMessage.textContent = "";
+        let errorCheck;
+        let errorCases = [];
+
+        if(!year){
+            errorCases.push('year')
         }
+        
+        if(!region){
+            errorCases.push('region')
+        }
+        
+        if(!indicator){
+            errorCases.push('indicator')
+        }
+
+        if(errorCases.length > 0){
+            errorMessage.textContent = `Please enter ${errorCases.join(', ')}`;
+            errorCheck = true;
+        }
+
+        return errorCheck;
+        
     }
 
-    var prevIndicatorId;
-    var prevDate;
-    var prevRegion;
+  
     function formHandler(e){
         e.preventDefault();
         let indicatorId = inputs[0].value;
-        let year = inputs[1].value;
-        let region = inputs[2].value;
-        if(prevIndicatorId == indicatorId && prevDate == year && region == prevRegion){
-            console.log('no new inputs detected');
-        }
-        prevIndicatorId = indicatorId;
-            prevDate = year;
-            prevRegion = region;
+        let year = (function(){
+            let yearFrom = inputs[1].value;
+            let yearTo = inputs[2].value
+            if(yearFrom && !yearTo){
+                return yearFrom
+            }
+            else if(yearFrom && yearTo){
+                return `${yearFrom}:${yearTo}`
+            }
+            else{
+                return yearTo
+            }
+        })()
+        let region = inputs[3].value;
+       
         if(formValidation(year, region, indicatorId)){
             return 
         }
@@ -136,29 +153,15 @@ const submision = (function(){
 
 
 
-/*let submision;
-
-const form = document.getElementsByClassName('form')[0];
-const inputs = document.getElementsByClassName('form')[0].children;
-
-form.addEventListener('submit', formHandler)
-
-function formHandler(e){
-    let indicatorId = inputs[0].value
-    let date = inputs[1].value;
-    let countries = inputs[2].value;
-    e.preventDefault()
-    let queryStringParams = `http://api.worldbank.org/v2/countries/${countries}/indicators/${indicatorId}?date=${date}&format=json&per_page=400`    
-    
-    submision = new Promise((resolve, reject) =>{
-        resolve(queryStringParams)
-    })
-}
-
-
-submision.then(function(data){
-    console.log(data, 6)
-    return API_request(data);
-}).then(handler)*/
+/*
+var prevIndicatorId;
+    var prevDate;
+    var prevRegion;
+if(prevIndicatorId == indicatorId && prevDate == year && region == prevRegion){
+            console.log('no new inputs detected');
+        }
+        prevIndicatorId = indicatorId;
+            prevDate = year;
+            prevRegion = region;*/
 
  

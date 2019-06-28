@@ -11,5 +11,11 @@ main {
 
 #maps {
     height: 100%;
-    width: 100%
+    width: 100%;
+    position: relative
+}
+
+#maps > div{
+ position: absolute;
+ display: none;
 }
