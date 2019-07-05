@@ -19,3 +19,12 @@ main {
  position: absolute;
  display: none;
 }
+
+#maps > input{
+    position: absolute;
+}
+
+#maps .show{
+    display: block;
+}
+

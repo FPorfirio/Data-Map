@@ -1,5 +1,5 @@
 import { obj } from './world-bank.js'
-import {isoJson} from './country_iso_codes.js'
+import {isoJson, isoContinents, isoSubContinents} from './country_iso_codes.js'
 console.log(isoJson)
 const yearContainer = document.querySelector('.mapInfoDisplay .yearBox ul li')[0];
 
@@ -136,6 +136,18 @@ const addCountries = (function(){
         li.textContent = e.target.options[e.target.selectedIndex].textContent;
         CountryContainer.appendChild(li);
     }
+
+    const selectContinent = document.createElement('select');
+    for(var prop in isoContinents){
+        let option = document.createElement('option');
+        option.textContent = prop;
+        option.value = isoContinents[prop]
+        selectContinent.appendChild(option);
+
+    }
+    mainClass.appendChild(selectContinent)
+
+    
 })()
 
 const mapInfo = (function(){

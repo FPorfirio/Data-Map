@@ -76,15 +76,37 @@ function handler(data){
         return dataSet;
     })()
 
-    document.createElement('range');
-    
-    
     for(var arr in dataSet){
+    
         let mapContainer = document.createElement('div');
         mapContainer.classList.add(arr)
         maps.appendChild(mapContainer);
         google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainer));
     }
+
+    const range = (function(){
+        let range = document.createElement('input');
+        range.type = 'range';
+        range.max = Math.max(...Object.keys(dataSet));
+        range.min = Math.min(...Object.keys(dataSet));
+        range.addEventListener(('change'),callback);
+        range.classList.add('show');
+        console.log(range.value)
+        let currentElement = document.getElementsByClassName(range.value)[0];
+        currentElement.classList.toggle('show')
+
+        function callback(e){
+          const nextElement = document.getElementsByClassName(this.value)[0];
+          nextElement.classList.toggle('show');
+          currentElement.classList.toggle('show');
+          currentElement = nextElement;
+        }
+        
+        maps.appendChild(range)
+    })()
+    
+    
+    
        
 }
 

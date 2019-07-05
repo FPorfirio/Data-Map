@@ -2,4 +2,46 @@ const isoStr = `[{"Code": "AF", "Name": "Afghanistan"},{"Code": "AX", "Name": "\
 
 const isoJson = JSON.parse(isoStr);
 
-export {isoJson}
+const isoContinents = {
+    'Africa': '002',
+    'America': '019',
+    'Asia': '142',
+    'Europe': '150',
+    'Oceania': '009',
+}
+
+const isoSubContinents = {
+    'Northern Africa': '015',
+    'Western Africa': '011',
+    'Middle Africa': '017',
+    'Eastern Africa': '014',
+    'Southern Africa': '018',
+
+    'Northern Europe': '154',
+    'Western Europe': '155',
+    'Eastern Europe': '151',
+    'Southern Europe': '039',
+
+    'Northern America': '021',
+    'Caribbean': '029',
+    'Central America': '013',
+    'South America': '005',
+
+    'Central Asia': '143',
+    'Eastern Asia': '030',
+    'Southern Asia': '034',
+    'South-eastern Asia': '035',
+    'South-weastern Asia': '035',
+    'Western Asia': '145',
+
+    'Australia and New Zealand': '053',
+    'Melanesia': '054',
+    'Micronesia': '057',
+    'Polynesia': '061'
+}
+
+
+
+
+
+export {isoJson, isoContinents, isoSubContinents}
