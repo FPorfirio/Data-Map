@@ -108,26 +108,37 @@ const addYears = (function(){
 
 //creating element for country selection
 const addCountries = (function(){
-    let select = document.createElement('select')
-
+    const selectCountries = document.createElement('select')
     for(let i = 0; i < 249; i++){
         let option = document.createElement('option');
         option.textContent = isoJson[i].Name;
         option.value = isoJson[i].Code;
-        select.appendChild(option);
+        selectCountries.appendChild(option);
     }
-    
-    const countryValues = []
-    select.addEventListener('change', countryCallback)
-    mainClass.appendChild(select);
+    selectCountries.addEventListener('change', countryCallback);
 
-    function countryCallback(e, countries){
-        countryValues.push(e.target.value);
-        console.log(e.target.options[e.target.selectedIndex])
-        const valueStr = countryValues.join(';');
-        inputs[3].value = valueStr;
+
+    const selectContinent = document.createElement('select');
+    const optionDefault = document.createElement('option')
+    optionDefault.selected = 'selected'
+    optionDefault.hidden = true;
+    optionDefault.textContent = 'please select a continent'
+    selectContinent.appendChild(optionDefault)
+
+    isoContinents.forEach(continent => {
+        let option = document.createElement('option');
+        option.textContent = continent.name;
+        option.value = continent.countriesCode;
+        option.dataset.isoCode = continent.code;
+        selectContinent.appendChild(option)
+    })
+    selectContinent.addEventListener('change', countryCallback)
+
+    function countryCallback(e){
+        inputs[3].value = inputs[3].value + e.target.value;
+        inputs[4].value = e.target.options[e.target.selectedIndex].dataset.isoCode
+        console.log(e.target.dataset.iso)
         console.log(inputs);
-
 
         const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul');
         const li = document.createElement('li');
@@ -137,19 +148,51 @@ const addCountries = (function(){
         CountryContainer.appendChild(li);
     }
 
-    const selectContinent = document.createElement('select');
-    for(var prop in isoContinents){
-        let option = document.createElement('option');
-        option.textContent = prop;
-        option.value = isoContinents[prop]
-        selectContinent.appendChild(option);
-
-    }
+    mainClass.appendChild(selectCountries); 
+  
     mainClass.appendChild(selectContinent)
 
     
 })()
 
+//creating element for mode selection
+const addMode = (function(){
+    const select =  document.createElement('select');
+    select.addEventListener('change', modeCallback);
+    const modes = ['countries','continents','subcontinent','provinces','metros']
+
+    modes.forEach(element => {
+        let option = document.createElement('option');
+        option.textContent = element;
+        option.value = element;
+        select.appendChild(option)
+    })
+
+    function modeCallback(e){
+        inputs[3].value = ""
+        inputs[5].value = e.target.value;
+
+        const modeContainer = document.querySelector('.mapInfoDisplay .modeBox');
+        const regionsBox = document.querySelector('.countriesBox ul');
+
+        while (regionsBox.firstChild) {
+            regionsBox.removeChild(regionsBox.firstChild);
+        }        
+        if(modeContainer.firstElementChild){
+            modeContainer.firstElementChild.textContent = event.target.value;
+        }
+        else{
+            const span = document.createElement('span');
+            span.textContent = e.target.value;
+            span.classList.add('mode');
+            modeContainer.appendChild(span)
+        } 
+    }
+
+    mainClass.appendChild(select)
+
+
+})() 
 const mapInfo = (function(){
     const mapInfoDisplay = document.getElementsByClassName('mapInfoDisplay')[0]
    
@@ -160,7 +203,7 @@ const mapInfo = (function(){
         }
         if(e.target.classList.contains('countries')){
             const countryValue = e.target.dataset.id;
-            const regexp = new RegExp(`^${countryValue};|;*${countryValue}`);
+            const regexp = new RegExp(countryValue);
             const updatedInput = inputs[3].value.replace(regexp, "");
             inputs[3].value = updatedInput;
             e.target.remove()
@@ -175,7 +218,12 @@ const mapInfo = (function(){
             else{
                 inputs[2].value = "";
             }  
-        }    
+        }
+        
+        if(e.target.classList.contains('mode')){
+            inputs[5].value = '';
+            e.target.remove;
+        }
     })
 })()
 
@@ -187,3 +235,6 @@ docFragment.appendChild(ul);
 mainClass.appendChild(docFragment);
 
 console.log(obj)
+
+
+//const regexp = new RegExp(`^${countryValue};|;*${countryValue}`);

@@ -17,9 +17,11 @@
         <div class="formContainer">
             <form class="form" action="" method="get">
                 <input type="hidden" name="indicatorID" required>
-                <input type="hidden" type="number" name="yearFrom" required>
+                <input type="hidden" name="yearFrom" required>
                 <input type="hidden" name="yearTo">
                 <input type="hidden" name="region" required>
+                <input type="hidden" name="isoCode">
+                <input type="hidden" name="mode" value="countries">
                 <button type="submit"></button>
             </form>
         </div>
@@ -37,6 +39,10 @@
             </div>
             <div class="indicatorBox">
 
+            </div>
+
+            <div class=modeBox>
+                
             </div>
             <div class="errorBox">
                 <span class="errorMessage"></span>

@@ -2,13 +2,34 @@ const isoStr = `[{"Code": "AF", "Name": "Afghanistan"},{"Code": "AX", "Name": "\
 
 const isoJson = JSON.parse(isoStr);
 
-const isoContinents = {
-    'Africa': '002',
-    'America': '019',
-    'Asia': '142',
-    'Europe': '150',
-    'Oceania': '009',
-}
+const isoContinents = [
+    {
+        "name": "Africa",
+        "code": "002",
+        "countriesCode": "DZEGLYMASDSSTNBFBJCICVGHGMGNGWLRMLMRNENGSLSNTGAOCDZRCFCGCMGAGQSTTDBIDJERETKEKMMGMUMWMZRWSCSOTZUGYTZMZWBWLSNASZZA"
+    },
+    {
+        "name": "America",
+        "code": "019",
+        "countriesCode": "BMCAGLUSAGAIANAWBBBSCUDMDOGDHTJMKNKYLCMFPRTCTTVCVGVIBZCRGTHNMXNIPASVARBOBRCLCOECGYPEPYSRUYVE"
+    },
+        
+    {
+        "name": "Asia",
+        "code": "142",
+        "countriesCode": "TMTJKGKZUZCNHKJPKPKRMNMOTWAFBDBTINIRLKMVNPPKBNIDKHLAMMMYPHSGTHTLTPVNAEAMAZBHCYGEILIQJOKWLBOMPSQASASYTRYE"
+    },
+    {
+        "name": "Europe",
+        "code": "150",
+        "countriesCode": "JEDKEEFIFOGBIEIMISLTLVNOSEATBECHDEFRLILUMCNLBGBYCZHUMDPLRORUSKUAADALBAESGIGRHRITMEMKMTRSPTSISM"
+    },
+    {
+        "name": "Oceania",
+        "code": "009",
+        "countriesCode": "ASAUNZFJPFGUKIMHFMNRNCMPPWPGWSSBTVVU"
+    }
+]
 
 const isoSubContinents = {
     'Northern Africa': '015',

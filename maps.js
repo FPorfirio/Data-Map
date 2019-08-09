@@ -1,7 +1,6 @@
+import {isoJson, isoContinents, isoSubContinents} from './country_iso_codes.js'
 //Calling world-bank Api
-
-
- function API_request(url) {       
+function API_request(url) {       
     return new Promise((resolve, reject) => {
         var req = new XMLHttpRequest;
         req.onload = function(){
@@ -34,30 +33,27 @@ google.charts.load('current', {
     'packages':['geochart'],
     // Note: you will need to get a mapsApiKey for your project.
     // See: https://developers.google.com/chart/interactive/docs/basic_load_libs#load-settings
-    'mapsApiKey': 'AIzaSyC3nKl9HH4SNYVPm0A_bGXj4bt5ItWQtv4'
+    'mapsApiKey': 'AIzaSyCktte1kQ1EfJT6AJNWC5kfMZJMtcnvowg'
   });
   
-function drawRegionsMap(regions, descriptions, elementContainer) {
+function drawRegionsMap(regions, descriptions, elementContainer, options) {
   var data = new google.visualization.DataTable();
   data.addColumn('string', 'mitch');
   data.addColumn('number', descriptions);
   data.addRows(regions)
-  var options = {'width': 1200, 'height': 1200};
+  var options = {'width': 1200, 'height': 1200, resolution: options.mode};
 
   var chart = new google.visualization.GeoChart(elementContainer);
 
   chart.draw(data, options);
 }
 
-
-function handler(data){
-    console.log(data)
-    const response = data[1]
-
+//arreglar las propiedades del response
+function handler(worldBankReq, googleApiOptions){
+    const response = worldBankReq[1];
+    console.log(worldBankReq)
     const finalreg = /(^[^\n\(\)]+(?:\([^\n\(\)]+\))*)\s*(\([^\n]+\))|[^\n]+$/i
     const IndicatorMetaData = response[0].indicator.value.match(finalreg);
-
-    console.log(IndicatorMetaData)
     const IndicatorDescription =  IndicatorMetaData[2];
     const maps = document.getElementById('maps');
 
@@ -65,23 +61,56 @@ function handler(data){
         const dataSet = {    
         }
 
-        for(var i = 0; i < response.length; i++){
-            let date = response[i].date;
-            if(!dataSet.hasOwnProperty(date)){
-                dataSet[date] = [];
-            }
-            dataSet[date].push([response[i].country.value, Math.round(response[i].value)])
-        } 
+        if(googleApiOptions.mode == 'countries') {
+            for(let i = 0; i < response.length; i++){
+                let date = response[i].date;
+                if(!dataSet.hasOwnProperty(date)){
+                    dataSet[date] = [];
+                }
+                dataSet[date].push([response[i].country.value, Math.round(response[i].value)])
+            } 
 
-        return dataSet;
+            return dataSet;
+        }
+        else{
+            for(let i = 0; i < response.length; i++){
+                let date = response[i].date;
+                if(!dataSet.hasOwnProperty(date)){
+                    dataSet[date] = [];
+                }
+                let continent = isoContinents.filter(e => e.countriesCode.match(/(.{2})/gi).includes(response[i].country.id))
+                let cell = [continent[0].code, response[i].value]       
+                const findIndex = dataSet[response[i].date].findIndex(e => e[0] == cell[0]);
+
+                if(findIndex == -1){
+                    dataSet[response[i].date].push(cell);
+                }
+                else{
+                    dataSet[response[i].date][findIndex][1] += cell[1]
+                }/*
+                for(let i = 0; i <= dataSet[response[i].date].length; i++){
+                    if(!dataSet[response[i].date].some( e => e[0] == cell[0])){
+                        dataSet[response[i].date].push(cell);
+                        break
+                    }
+                    if(dataSet[response[i].date][i][0] == cell[0]){
+                        dataSet[response[i].date][i][1] += cell[1]
+                        break
+                    }
+                }*/
+            } 
+
+            return dataSet;
+        }
+
     })()
 
-    for(var arr in dataSet){
-    
+    console.log(dataSet)
+    for(let arr in dataSet){
         let mapContainer = document.createElement('div');
         mapContainer.classList.add(arr)
         maps.appendChild(mapContainer);
-        google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainer));
+        google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainer, googleApiOptions));
     }
 
     const range = (function(){
@@ -103,11 +132,7 @@ function handler(data){
         }
         
         maps.appendChild(range)
-    })()
-    
-    
-    
-       
+    })()    
 }
 
 
@@ -162,14 +187,46 @@ const submision = (function(){
                 return yearTo
             }
         })()
-        let region = inputs[3].value;
+        let region = (function(){
+            let regexp = /(.{2})/gi;
+            let regexp2 = /;$/g
+            return inputs[3].value.replace(regexp,('$1;')).replace(regexp2,'');
+        })()
+        
+        
+
+        const parameters = {
+            mode: inputs[5].value,
+            isoCodes: inputs[4].value,
+        }
        
         if(formValidation(year, region, indicatorId)){
             return 
         }
 
-        let queryStringParams = `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400`;
-        API_request(queryStringParams).then(handler).catch((e)=>(console.log('errpr:',e)));
+        let pages = 1;
+        let queryStringParams = `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400&page=${pages}`;
+        let promises = (function(){
+            const promises = [];
+            const count = 0
+            const reqData = API_request(queryStringParams).then((data) => {
+                let response = data;
+                promises.push(response)
+                while(data[0].page < data[0].pages){
+                    pages++
+                    response = API_request(queryStringParams).then((data) => data);
+                    promises.push(data);
+                }
+            });
+            
+            return promises
+        })()
+        console.log(promises)
+        console.log(queryStringParams)
+        /*
+        API_request(queryStringParams)
+        .then(data => {handler(data, parameters)}).
+        catch((e)=>(console.log('errpr:',e)));*/
     }
 })()
 
