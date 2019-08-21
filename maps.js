@@ -50,7 +50,7 @@ function drawRegionsMap(regions, descriptions, elementContainer, options) {
 
 //arreglar las propiedades del response
 function handler(worldBankReq, googleApiOptions){
-    const response = worldBankReq[1];
+    const response = worldBankReq;
     console.log(worldBankReq)
     const finalreg = /(^[^\n\(\)]+(?:\([^\n\(\)]+\))*)\s*(\([^\n]+\))|[^\n]+$/i
     const IndicatorMetaData = response[0].indicator.value.match(finalreg);
@@ -87,19 +87,8 @@ function handler(worldBankReq, googleApiOptions){
                 }
                 else{
                     dataSet[response[i].date][findIndex][1] += cell[1]
-                }/*
-                for(let i = 0; i <= dataSet[response[i].date].length; i++){
-                    if(!dataSet[response[i].date].some( e => e[0] == cell[0])){
-                        dataSet[response[i].date].push(cell);
-                        break
-                    }
-                    if(dataSet[response[i].date][i][0] == cell[0]){
-                        dataSet[response[i].date][i][1] += cell[1]
-                        break
-                    }
-                }*/
+                }
             } 
-
             return dataSet;
         }
 
@@ -120,6 +109,8 @@ function handler(worldBankReq, googleApiOptions){
         range.min = Math.min(...Object.keys(dataSet));
         range.addEventListener(('change'),callback);
         range.classList.add('show');
+        let dataList = document.createElement('datalist');
+        let tickMarks = Array.from()
         console.log(range.value)
         let currentElement = document.getElementsByClassName(range.value)[0];
         currentElement.classList.toggle('show')
@@ -203,27 +194,78 @@ const submision = (function(){
         if(formValidation(year, region, indicatorId)){
             return 
         }
-
         let pages = 1;
+
         let queryStringParams = `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400&page=${pages}`;
-        let promises = (function(){
-            const promises = [];
-            const count = 0
-            const reqData = API_request(queryStringParams).then((data) => {
+        
+
+        let queries = (function(){
+            function url(page=1){
+               return `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400&page=${page}`
+            }
+
+            function* req(){
+                let data = yield API_request(url());
+                console.log(data)
+                let page = data[0].page
+                while(page < data[0].pages){
+                    page++
+                    yield API_request(url(page));
+                }
+                
+            }
+
+            function getRunner(query){
+                let generator = query();
+                let item = generator.next()
+
+                let promises = [];
+                function nextItem(){
+                    console.log(item)
+                    if(item.done){
+                        Promise.all(promises).then(elements => {
+                            let reducedElements = elements.reduce((accumulator, currentValue) =>{
+                                return accumulator.concat(currentValue[1])
+                            },[]) 
+                            handler(reducedElements, parameters)
+                        })
+                        return
+                    }
+                    item.value.then(data => {
+                        promises.push(data)
+                        item = generator.next(data)
+                        nextItem()
+                    })
+                    console.log(promises)
+                }
+                return nextItem();      
+            }    
+
+            return getRunner(req)
+            console.log(getRunner(req))
+        })()
+       /* Promise.all(queries).then(elements => {elements.forEach(e => {
+            handler(e, parameters)
+        })})
+         /*let promises = (function(){
+            const newPromise = [];
+            API_request(queryStringParams).then((data) => {
                 let response = data;
-                promises.push(response)
-                while(data[0].page < data[0].pages){
+                newPromise.push(response)
+                while(pages <= response[0].pages){
                     pages++
+                    queryStringParams = `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400&page=${pages}`;
+                    console.log(data[0])
                     response = API_request(queryStringParams).then((data) => data);
-                    promises.push(data);
+                   newPromise.push(data);
+                    console.log(newPromise)
                 }
             });
-            
-            return promises
+
+            return newPromise
         })()
         console.log(promises)
-        console.log(queryStringParams)
-        /*
+        
         API_request(queryStringParams)
         .then(data => {handler(data, parameters)}).
         catch((e)=>(console.log('errpr:',e)));*/
