@@ -54,6 +54,7 @@ function handler(worldBankReq, googleApiOptions){
     console.log(worldBankReq)
     const finalreg = /(^[^\n\(\)]+(?:\([^\n\(\)]+\))*)\s*(\([^\n]+\))|[^\n]+$/i
     const IndicatorMetaData = response[0].indicator.value.match(finalreg);
+    console.log(response[0].indicator.value)
     const IndicatorDescription =  IndicatorMetaData[2];
     const maps = document.getElementById('maps');
 
@@ -96,21 +97,31 @@ function handler(worldBankReq, googleApiOptions){
 
     console.log(dataSet)
     for(let arr in dataSet){
-        let mapContainer = document.createElement('div');
+        let mapContainer1 = document.createElement('div');
+        let mapContainer2 = document.createElement('div')
+        let mapContainers = new Array(mapContainer1,mapContainer2)
         mapContainer.classList.add(arr)
         maps.appendChild(mapContainer);
-        google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainer, googleApiOptions));
+        google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainer1, googleApiOptions));
     }
 
     const range = (function(){
-        let range = document.createElement('input');
-        range.type = 'range';
+        let range = document.getElementById('yearRange');
         range.max = Math.max(...Object.keys(dataSet));
         range.min = Math.min(...Object.keys(dataSet));
-        range.addEventListener(('change'),callback);
+        range.addEventListener(('input'),callback);
         range.classList.add('show');
-        let dataList = document.createElement('datalist');
-        let tickMarks = Array.from()
+
+        let dataList = document.getElementById('dataList');
+
+        for(let i = range.min; i <= range.max; i++){
+            let option = document.createElement('option');
+            option.value = i;
+            option.label = i;
+            dataList.appendChild(option)
+        }
+        
+       
         console.log(range.value)
         let currentElement = document.getElementsByClassName(range.value)[0];
         currentElement.classList.toggle('show')
@@ -122,8 +133,7 @@ function handler(worldBankReq, googleApiOptions){
           currentElement = nextElement;
         }
         
-        maps.appendChild(range)
-    })()    
+    })()
 }
 
 
@@ -183,20 +193,13 @@ const submision = (function(){
             let regexp2 = /;$/g
             return inputs[3].value.replace(regexp,('$1;')).replace(regexp2,'');
         })()
-        
-        
-
-        const parameters = {
-            mode: inputs[5].value,
-            isoCodes: inputs[4].value,
+        let parameters = {
+            mode: inputs[4].value,
         }
        
         if(formValidation(year, region, indicatorId)){
             return 
         }
-        let pages = 1;
-
-        let queryStringParams = `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400&page=${pages}`;
         
 
         let queries = (function(){
@@ -244,28 +247,7 @@ const submision = (function(){
             return getRunner(req)
             console.log(getRunner(req))
         })()
-       /* Promise.all(queries).then(elements => {elements.forEach(e => {
-            handler(e, parameters)
-        })})
-         /*let promises = (function(){
-            const newPromise = [];
-            API_request(queryStringParams).then((data) => {
-                let response = data;
-                newPromise.push(response)
-                while(pages <= response[0].pages){
-                    pages++
-                    queryStringParams = `https://api.worldbank.org/v2/countries/${region}/indicators/${indicatorId}?date=${year}&format=json&per_page=400&page=${pages}`;
-                    console.log(data[0])
-                    response = API_request(queryStringParams).then((data) => data);
-                   newPromise.push(data);
-                    console.log(newPromise)
-                }
-            });
-
-            return newPromise
-        })()
-        console.log(promises)
-        
+       /*
         API_request(queryStringParams)
         .then(data => {handler(data, parameters)}).
         catch((e)=>(console.log('errpr:',e)));*/

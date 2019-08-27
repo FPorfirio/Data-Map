@@ -1,36 +1,45 @@
-import { obj } from './world-bank.js'
+import { indicators } from './world-bank.js'
 import {isoJson, isoContinents, isoSubContinents} from './country_iso_codes.js'
-console.log(isoJson)
-const yearContainer = document.querySelector('.mapInfoDisplay .yearBox ul li')[0];
-
-const mainClass = document.getElementsByClassName('fuckthis')[0];
+console.log(Object.keys(indicators)[0])
+const mainClass = document.getElementsByClassName('selectors')[0];
 const inputs = document.getElementsByClassName('form')[0].children;
 
 
-const docFragment = document.createDocumentFragment();
-const ul = document.createElement('ul');
 
-function decompose(group){
+
+
+const addIndicators = (function(){
+    
+    const indicatorsContainer = document.createElement('ul');
+    indicatorsContainer.addEventListener('click', indicatorContainerCallback)
+    indicators.forEach((group) => {
         const groupLi = document.createElement('li')
         const groupElement = document.createElement('ul')
         const groupName = document.createElement('li');
+        groupName.classList.add('title')
+
         const groupContentLi = document.createElement('li')
+        groupContentLi.classList.add('closed')
+
         const groupContentUl = document.createElement('ul');
-        console.log(group.keys)
         const name = Object.keys(group)[0];
         const groupValues = group[name];
         groupName.textContent = name;
 
         groupValues.forEach( ele => {
             const subgroupName = document.createElement('li');
+            subgroupName.classList.add('title')
+
             const sugbroupContent = document.createElement('li');
-            const subgroupContentUl = document.createElement('ul')
+            sugbroupContent.classList.add('closed')
+
+            const subgroupContentUl = document.createElement('ul');
             const name = Object.keys(ele)[0];
             const subgroupValues = ele[name]
             subgroupName.textContent = name;
 
             subgroupValues.forEach( ele => {
-                const indicator= document.createElement('li');
+                const indicator = document.createElement('li');
                 const indicatorRegexp = /(?<=\()[^\n\(\)]+(?=\)\n{0,1}$)/gi;
                 indicator.textContent = ele;
                 indicator.dataset.id = ele.match(indicatorRegexp)
@@ -47,30 +56,39 @@ function decompose(group){
             groupElement.appendChild(groupContentLi);
             groupLi.appendChild(groupElement);
         })
+        indicatorsContainer.appendChild(groupLi);    
+    });
 
-    ul.appendChild(groupLi);
-}
-
-
-//creating element for indicator selection
-function indicatorCallback(event){
-    const indicatorId = event.target.dataset.id;
-    inputs[0].value =  indicatorId;
-
-    const indicatorContainer = document.querySelector('.mapInfoDisplay .indicatorBox')
-    if(indicatorContainer.firstElementChild){
-        indicatorContainer.firstElementChild.textContent = event.target.textContent;
+    //Populate input field according to the indicator selected
+    function indicatorCallback(event){
+        const indicatorId = event.target.dataset.id;
+        inputs[0].value =  indicatorId;
+    
+        const indicatorInfoDisplay = document.querySelector('.mapInfoDisplay .indicatorBox')
+        if(indicatorInfoDisplay.firstElementChild){
+            indicatorInfoDisplay.firstElementChild.textContent = event.target.textContent;
+        }
+        else{
+            const span = document.createElement('span');
+            span.classList.add('indicator')
+            span.textContent = event.target.textContent;
+            indicatorInfoDisplay.appendChild(span);
+        }
     }
-    else{
-        const span = document.createElement('span');
-        span.classList.add('indicator')
-        span.textContent = event.target.textContent;
-        indicatorContainer.appendChild(span);
+
+    //Control the display of indicators interface lists
+    function indicatorContainerCallback(e){
+        if(e.target.classList.contains('title')){
+            var ele = e.target.nextElementSibling
+            ele.classList.toggle('closed')
+        }
     }
-}
+    mainClass.appendChild(indicatorsContainer);
+})()
 
 
-//Creating element for year selection
+
+//Creating HTML elements for year selection
 const addYears = (function(){
     const yearContainer = document.getElementsByClassName('yearBox__value');
     let select = document.createElement('select');
@@ -106,7 +124,7 @@ const addYears = (function(){
 })()
 
 
-//creating element for country selection
+//creating HTML elements for country selection
 const addCountries = (function(){
     const selectCountries = document.createElement('select')
     for(let i = 0; i < 249; i++){
@@ -136,7 +154,6 @@ const addCountries = (function(){
 
     function countryCallback(e){
         inputs[3].value = inputs[3].value + e.target.value;
-        inputs[4].value = e.target.options[e.target.selectedIndex].dataset.isoCode
         console.log(e.target.dataset.iso)
         console.log(inputs);
 
@@ -155,7 +172,7 @@ const addCountries = (function(){
     
 })()
 
-//creating element for mode selection
+//creating HTML elements for mode selection
 const addMode = (function(){
     const select =  document.createElement('select');
     select.addEventListener('change', modeCallback);
@@ -170,7 +187,7 @@ const addMode = (function(){
 
     function modeCallback(e){
         inputs[3].value = ""
-        inputs[5].value = e.target.value;
+        inputs[4].value = e.target.value;
 
         const modeContainer = document.querySelector('.mapInfoDisplay .modeBox');
         const regionsBox = document.querySelector('.countriesBox ul');
@@ -193,6 +210,8 @@ const addMode = (function(){
 
 
 })() 
+
+//Creating HTML elements to display input values of the request
 const mapInfo = (function(){
     const mapInfoDisplay = document.getElementsByClassName('mapInfoDisplay')[0]
    
@@ -200,13 +219,6 @@ const mapInfo = (function(){
         if(e.target.classList.contains('indicator')){
             inputs[0].value = "";
             e.target.remove();
-        }
-        if(e.target.classList.contains('countries')){
-            const countryValue = e.target.dataset.id;
-            const regexp = new RegExp(countryValue);
-            const updatedInput = inputs[3].value.replace(regexp, "");
-            inputs[3].value = updatedInput;
-            e.target.remove()
         }
         if(e.target.classList.contains('yearBox__value')){
             const yearContainer = document.getElementsByClassName('yearBox__value');
@@ -219,9 +231,15 @@ const mapInfo = (function(){
                 inputs[2].value = "";
             }  
         }
-        
+        if(e.target.classList.contains('countries')){
+            const countryValue = e.target.dataset.id;
+            const regexp = new RegExp(countryValue);
+            const updatedInput = inputs[3].value.replace(regexp, "");
+            inputs[3].value = updatedInput;
+            e.target.remove()
+        }     
         if(e.target.classList.contains('mode')){
-            inputs[5].value = '';
+            inputs[4].value = '';
             e.target.remove;
         }
     })
@@ -229,12 +247,7 @@ const mapInfo = (function(){
 
 
 
-obj.forEach(decompose);
-
-docFragment.appendChild(ul);
-mainClass.appendChild(docFragment);
-
-console.log(obj)
+console.log(indicators)
 
 
 //const regexp = new RegExp(`^${countryValue};|;*${countryValue}`);

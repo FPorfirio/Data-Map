@@ -28,3 +28,15 @@ main {
     display: block;
 }
 
+#dataList{
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+}
+
+.open{
+    display:block;
+}
+.closed{
+    display:none
+}

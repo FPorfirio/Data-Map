@@ -12,15 +12,13 @@
     <header>
     </header>
     <main>
-        <div class="fuckthis"></div>
-        <div class="shot"></div>
+        <div class="selectors"></div>
         <div class="formContainer">
             <form class="form" action="" method="get">
                 <input type="hidden" name="indicatorID" required>
                 <input type="hidden" name="yearFrom" required>
                 <input type="hidden" name="yearTo">
                 <input type="hidden" name="region" required>
-                <input type="hidden" name="isoCode">
                 <input type="hidden" name="mode" value="countries">
                 <button type="submit"></button>
             </form>
@@ -48,7 +46,22 @@
                 <span class="errorMessage"></span>
             </div>
         </div>
-        <div id="maps"></div>
+        <input type="range" name="" id="yearRange" list="dataList">
+        <datalist id="dataList">
+            <option value="1">a</option>
+            <option value="2">a</option>
+
+            <option value="3">a</option>
+
+            <option value="4">a</option>
+
+            <option value="">a</option>
+
+
+        </datalist>
+        <div id="maps">
+            
+        </div>
     </main>
     <footer>
     </footer>

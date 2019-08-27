@@ -896,11 +896,9 @@ const regexp10 = /(?: +(?:[\d]|\D){1,4}\d)|^ +/g; //match worlds and letter at t
 const regtry = /(?:[a-zA-Z]+ {0,1})+\n{0,1}/g
 
 
-let myArr;
 
-let bigAr = indicatorsID.match(regexp1);
 
-let obj = (function(){
+let indicators = (function(){
     const statics = []
     
     let indicatorGroups = indicatorsID.match(regexp1);
@@ -932,4 +930,4 @@ let obj = (function(){
     return statics;
 })()
 
-export {obj, API_call}
+export {indicators}
