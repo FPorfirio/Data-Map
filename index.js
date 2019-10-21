@@ -240,7 +240,7 @@ const mapInfo = (function(){
         }     
         if(e.target.classList.contains('mode')){
             inputs[4].value = '';
-            e.target.remove;
+            e.target.remove();
         }
     })
 })()

@@ -37,15 +37,83 @@ google.charts.load('current', {
   });
   
 function drawRegionsMap(regions, descriptions, elementContainer, options) {
-  var data = new google.visualization.DataTable();
-  data.addColumn('string', 'mitch');
-  data.addColumn('number', descriptions);
-  data.addRows(regions)
-  var options = {'width': 1200, 'height': 1200, resolution: options.mode};
+    const maps = document.getElementById('maps');
 
-  var chart = new google.visualization.GeoChart(elementContainer);
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'mitch');
+    data.addColumn('number', descriptions);
+    data.addRows(regions)
+    var options = {'width': 'auto','height': 'auto', resolution: options.mode};
+    var chartRegion = new google.visualization.GeoChart(elementContainer[0]);
+    chartRegion.draw(data, options);
+    /*let options1 = {'width': 'auto','height': 'auto', displayMode: 'text'};
+    let chartText = new google.visualization.GeoChart(elementContainer[1]);
+    let svgText
 
-  chart.draw(data, options);
+    function readyHandler(){
+        const text = Array.from(document.querySelectorAll('g[clip-path] text'));
+        const svg = document.getElementsByTagName('svg')[0];
+        let pt = svg.createSVGPoint();
+        let fragment = document.createDocumentFragment();
+
+        function svgPoint(element, x, y) {
+            pt.x = x;
+            pt.y = y;
+            return pt.matrixTransform(element.getScreenCTM().inverse());
+        }   
+    
+        const svgText = text.map(e => {
+            e.style.fill = 'black';
+            e.style.fontSize = '25'
+            let parent = e.parentElement;
+            parent.remove()
+            let clone = parent.cloneNode(true)
+            
+            clone.setAttributeNS(null, 'cx', svgPoint(parent,10,10).x);
+            clone.setAttributeNS(null, 'cy',  svgPoint(parent,10,10).y);
+            clone.setAttributeNS(null, 'r', 10);
+
+            return clone;
+        })
+        console.log(svgText,fragment)
+        while(elementContainer[1].firstElementChild){
+            elementContainer[1].removeChild(elementContainer[1].firstChild);
+        }
+
+        svgText.forEach(e => {
+            fragment.appendChild(e);
+        })
+
+        function regionHandler(){
+            let regionSVG = document.getElementsByTagName('svg')[0];
+        console.log(regionSVG)
+        regionSVG.appendChild(fragment);
+        }
+        let chartRegion = new google.visualization.GeoChart(elementContainer[0]);
+        google.visualization.events.addListener(chartRegion, 'ready', regionHandler);
+
+        chartRegion.draw(data, options);
+        
+
+   const textCoords = text.map(ele => [ele.textContent, ele.getBoundingClientRect()])
+   console.log(textCoords)
+   const ul = document.createElement('ul')
+   text.forEach(e => {
+      let parent = e.parentElement;
+      parent.remove()
+      let clone = parent.cloneNode(true)
+      
+        clone.setAttributeNS(null, 'cx', svgPoint(parent,10,10).x);
+        clone.setAttributeNS(null, 'cy',  svgPoint(parent,10,10).y);
+        clone.setAttributeNS(null, 'r', 10);
+        svg.appendChild(clone);
+    })
+  }
+  google.visualization.events.addListener(chartText, 'ready', readyHandler);
+  chartText.draw(data,options1)*/
+  var chartRegion = new google.visualization.GeoChart(elementContainer[0]);
+  chartRegion.draw(data, options);
+  
 }
 
 //arreglar las propiedades del response
@@ -98,11 +166,15 @@ function handler(worldBankReq, googleApiOptions){
     console.log(dataSet)
     for(let arr in dataSet){
         let mapContainer1 = document.createElement('div');
-        let mapContainer2 = document.createElement('div')
-        let mapContainers = new Array(mapContainer1,mapContainer2)
-        mapContainer.classList.add(arr)
-        maps.appendChild(mapContainer);
-        google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainer1, googleApiOptions));
+        let mapContainer2 = document.createElement('div');
+        mapContainer1.classList.add(arr);
+        mapContainer2.classList.add(arr);
+        let mapContainers = new Array(mapContainer1,mapContainer2);
+
+        maps.appendChild(mapContainer1);
+        //maps.appendChild(mapContainer2);
+        google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainers, googleApiOptions));
+        window.addEventListener('resize', e => {drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainers, googleApiOptions)})
     }
 
     const range = (function(){
