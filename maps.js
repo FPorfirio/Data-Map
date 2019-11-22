@@ -116,6 +116,185 @@ function drawRegionsMap(regions, descriptions, elementContainer, options) {
   
 }
 
+function vectorChart(worldBankReq, googleApiOptions){
+    console.log(worldBankReq)
+    let shapes;
+    let svg = d3.select("svg");
+    let width = parseInt(svg.style("width"));
+    svg.style('height', window.innerWidth * 0.618 ) 
+
+  
+
+    if(window.innerWidth * 0.618 > window.innerHeight){
+        svg.style('height', window.innerHeight ) 
+
+    }else{
+        svg.style('height', window.innerWidth * 0.618 ) 
+    }
+    let height = parseInt(svg.style("height"));
+
+     console.log(typeof width)
+
+    console.log(width, height)
+    console.log( "document=" + document.documentElement.clientWidth,document.documentElement.clientHeight, "window="+ window.innerWidth, window.innerHeight)
+
+
+    /*let colorScale = d3.scaleThreshold()
+    .domain([100000, 1000000, 10000000, 30000000, 100000000, 500000000])
+    .range(d3.schemeBlues[7]);*/
+    let keys = Object.keys(worldBankReq)
+
+    var projection =  d3.geoMercator().fitSize([width,height], {
+        type: "Polygon",
+        coordinates: [[ 
+          [-179.999,84] , 
+          [-179.999,-57] , 
+          [179.999,-57] , 
+          [179.999,84], 
+          [-179.999,84] 
+         ]]
+       })
+
+    var path = d3.geoPath().projection(projection);
+
+
+    let geoJson = d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
+    geoJson.then(ready)
+    
+    function ready(json){
+        shapes = json;
+        initRange()
+        update(shapes, worldBankReq[keys[0]])
+    }
+
+    function initRange(){
+        let map = d3.select('#maps')
+        let range = map.append('input')
+        .attr('type', 'range')
+        .attr('max', Math.max(...Object.keys(worldBankReq)))
+        .attr('min', Math.min(...Object.keys(worldBankReq)))
+        .on('input', callback)
+   
+        function callback(d, i){
+          let value = this.value;
+          let dataArr = worldBankReq[value];
+          console.log(dataArr)
+          update(shapes, dataArr)
+        }
+    }
+
+    function update(shapes, data){
+        
+        let breakpoints = ss.ckmeans(data.map(ele => ele[1]), 8).map(cluster => cluster[0]);
+        let last = breakpoints.pop();
+        let first = breakpoints.shift();
+        
+        let colorsNumber = data.length >= 7 ? 7 : data.length;
+        let colorScale = d3.scaleThreshold()
+        .domain(breakpoints)
+        .range(d3.schemeBlues[colorsNumber]);
+
+        let u = d3.select('g.map')
+        .selectAll('path')
+        .data(shapes.features)
+
+        u.enter()
+        .append('path')
+        .merge(u)
+        .attr('d', path)
+        .attr("fill", function (d) {      
+            let statisticData = data.filter(e => d.properties.name == e[0])[0] ? colorScale( data.filter(e => d.properties.name == e[0])[0][1]) : 'grey' 
+            return statisticData;
+        });
+
+        let legend_labels = (function(){
+            let labels = [];
+            for(let i = 0; i < breakpoints.length; i++){
+                for(let a = 0; a < d3.schemeBlues[7].length; a++){
+                    if(i == 0 && a == 0){
+                        labels.push([`<${breakpoints[i]}`,
+                        d3.schemeBlues[7][a]])
+                    }
+                    else if(i == 0 && a == 1){
+                        labels.push([`${breakpoints[i]}+`,
+                        d3.schemeBlues[7][a]])
+                        break
+                    }
+                    else if(a > i){
+                       labels.push([`${breakpoints[i]}+`,
+                       d3.schemeBlues[7][a++]])
+                        break
+                    }       
+                }        
+            }
+            return labels;
+        })()
+        console.log(colorsNumber, legend_labels, breakpoints,d3.schemeBlues[7])
+        
+        //legend group
+        var ls_w = 20, ls_h = 20;
+        let legend = svg.selectAll("g.legend")
+        .data(legend_labels)
+        
+        
+        let legendEnter = 
+        legend.enter()
+        .append("g")
+        .attr("class", "legend");
+        
+        let legendMerge = legendEnter.merge(legend)
+        .attr('transform', (d,i) => `translate(${50},${height - (i*ls_h) - ls_h - 4})`)
+        
+        //legend text
+        let textLegend = legendMerge.selectAll('text').data(function(d){
+            console.log(d)
+            return [d[0]]})
+
+        let textLegendEnter = 
+        textLegend.enter()
+        .append("text");
+        var ls_w = 20, ls_h = 20;
+
+        textLegendEnter.merge(textLegend)
+        .text(function(d,i){return d})
+        .attr('x', 50)
+        .attr('y', 0)
+        .attr("dominant-baseline", "text-before-edge");
+
+
+        //legend color
+        let colorLegend = legendMerge.selectAll('rect').data(function(d,i){
+            return [d[1]]
+        })
+
+        let colorLegendEnter = colorLegend.enter()
+        .append("rect")
+
+        colorLegend.merge(colorLegendEnter)
+        .style("fill", function(d,i){
+            return d
+        })
+        .attr("width", ls_w)
+        .attr("height", ls_h)
+        .attr('x', 20)
+        .attr('y', 0)
+        /* var ls_w = 20, ls_h = 20;
+
+        legend.append("rect")
+        .attr("x", 20)
+        .attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
+        .attr("width", ls_w)
+        .attr("height", ls_h)
+        .style("fill", function(d, i) { return d[1]; })
+
+        legend.append("text")
+        .attr("x", 50)
+        .attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
+        .text(function(d, i){ return d[0]; });*/
+       
+    } 
+}
+
 //arreglar las propiedades del response
 function handler(worldBankReq, googleApiOptions){
     const response = worldBankReq;
@@ -164,20 +343,19 @@ function handler(worldBankReq, googleApiOptions){
     })()
 
     console.log(dataSet)
-    for(let arr in dataSet){
-        let mapContainer1 = document.createElement('div');
+        /*let mapContainer1 = document.createElement('div');
         let mapContainer2 = document.createElement('div');
         mapContainer1.classList.add(arr);
         mapContainer2.classList.add(arr);
         let mapContainers = new Array(mapContainer1,mapContainer2);
 
         maps.appendChild(mapContainer1);
-        //maps.appendChild(mapContainer2);
-        google.charts.setOnLoadCallback(drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainers, googleApiOptions));
-        window.addEventListener('resize', e => {drawRegionsMap(dataSet[arr], IndicatorDescription, mapContainers, googleApiOptions)})
-    }
+        maps.appendChild(mapContainer2);*/
+        let mapContainers = [];
+        vectorChart(dataSet, IndicatorDescription, mapContainers, googleApiOptions)
+    
 
-    const range = (function(){
+ /*   const range = (function(){
         let range = document.getElementById('yearRange');
         range.max = Math.max(...Object.keys(dataSet));
         range.min = Math.min(...Object.keys(dataSet));
@@ -205,7 +383,7 @@ function handler(worldBankReq, googleApiOptions){
           currentElement = nextElement;
         }
         
-    })()
+    })()*/
 }
 
 
@@ -283,6 +461,7 @@ const submision = (function(){
                 let data = yield API_request(url());
                 console.log(data)
                 let page = data[0].page
+                console.log(page)
                 while(page < data[0].pages){
                     page++
                     yield API_request(url(page));
@@ -296,33 +475,26 @@ const submision = (function(){
 
                 let promises = [];
                 function nextItem(){
-                    console.log(item)
+                    console.log(promises)
                     if(item.done){
-                        Promise.all(promises).then(elements => {
-                            let reducedElements = elements.reduce((accumulator, currentValue) =>{
-                                return accumulator.concat(currentValue[1])
-                            },[]) 
-                            handler(reducedElements, parameters)
-                        })
+                        let reducedElements = promises.reduce((accumulator, currentValue) =>{
+                            return accumulator.concat(currentValue[1])
+                        },[]) 
+                        handler(reducedElements, parameters)
                         return
                     }
                     item.value.then(data => {
                         promises.push(data)
                         item = generator.next(data)
                         nextItem()
-                    })
+                    }).catch(err => {console.log(err)})
                     console.log(promises)
                 }
-                return nextItem();      
+               nextItem();      
             }    
 
-            return getRunner(req)
-            console.log(getRunner(req))
+             getRunner(req)
         })()
-       /*
-        API_request(queryStringParams)
-        .then(data => {handler(data, parameters)}).
-        catch((e)=>(console.log('errpr:',e)));*/
     }
 })()
 
@@ -339,4 +511,26 @@ if(prevIndicatorId == indicatorId && prevDate == year && region == prevRegion){
             prevDate = year;
             prevRegion = region;*/
 
- 
+ /*let legend_labels = (function(){
+            let labels = [];
+            colorScale.range().forEach((e,i) => {
+                let labelStr = [];
+
+                if(i == 0 ){
+                    labelStr.push(`<${breakpoints[0]}`);
+                    labelStr.push(e);
+                    labels.push(labelStr)
+                }
+                if(i == 1){
+                    labelStr.push(`${breakpoints[0]}+`);
+                    labelStr.push(e);
+                    labels.push(labelStr)
+                }
+                else{
+                    labelStr.push(`${breakpoints[i]}+`);
+                    labelStr.push(e);
+                    labels.push(labelStr)
+                }
+            })
+            return labels
+        })()*/

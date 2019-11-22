@@ -46,7 +46,6 @@
                 <span class="errorMessage"></span>
             </div>
         </div>
-        <input type="range" name="" id="yearRange" list="dataList">
         <datalist id="dataList">
             <option value="1">a</option>
             <option value="2">a</option>
@@ -60,12 +59,22 @@
 
         </datalist>
         <div id="maps">
-            
+            <svg id="svg">
+                <g class="map"></g>
+            </svg>
         </div>
     </main>
     <footer>
     </footer>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+<script src="https://d3js.org/topojson.v2.min.js"></script>
+<script src="https://unpkg.com/simple-statistics@7.0.2/dist/simple-statistics.min.js"></script>
+
+
     <script type="module"  src="./maps.js"></script>
     <script type="module"  src="./index.js"></script>
+    
 </body>
 </html>
