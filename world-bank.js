@@ -607,7 +607,8 @@ const indicatorsID = `
     Current account balance (BoP, current US$) (BN.CAB.XOKA.CD)
     Total reserves (includes gold, current US$) (FI.RES.TOTL.CD)
 
-    //states and markets
+
+    //States and Markets
 
     5.1Private sector in the economy
     Investment in energy with private participation (current US$) (IE.PPI.ENGY.CD)
