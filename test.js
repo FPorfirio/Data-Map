@@ -14,6 +14,17 @@ match.forEach(e => {
 
 })
 
+
+        //comparission
+        /*function compare(){
+           let dataMap = data.map(e => e[0])
+           let shapesMap = prueba.features.map(e => e.properties.name)
+           let filter = dataMap.filter(e => shapesMap.indexOf(e) == -1)
+           return filter
+        }
+
+        console.log(compare())*/
+
 function API_request(url, e) {       
         var req = new XMLHttpRequest;
         req.onload = function(){

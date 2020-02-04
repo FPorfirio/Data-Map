@@ -1,4 +1,5 @@
 import {worldBankFix,fixCountryNames} from "./countryNameFix.js"
+import downloadCanvas from "./svgDownload.js"
 //Calling world-bank Api
 function API_request(url) {       
     return new Promise((resolve, reject) => {
@@ -26,10 +27,10 @@ function API_request(url) {
 }
 
 
-function vectorChart(worldBankReq, googleApiOptions){
-    console.log(worldBankReq)
+function vectorChart(worldBankReq, IndicatorMetaData, googleApiOptions){
     let shapes;
     let svg = d3.select("svg");
+    
     let width = parseInt(svg.style("width"));
     svg.style('height', window.innerWidth * 0.618 ) 
 
@@ -65,7 +66,12 @@ function vectorChart(worldBankReq, googleApiOptions){
     var path = d3.geoPath().projection(projection);
 
     //geotopofunction
-    let geoS = d3.json('./geojson/europe.json').then(readytopo)
+    /*if(!shapes){
+        let geoS = d3.json('./geojson/europe.json').then(readytopo)
+    }
+    else{
+        update(shapes)
+    }
 
     
     function readytopo(geo){
@@ -79,54 +85,49 @@ function vectorChart(worldBankReq, googleApiOptions){
         .attr('fill', 'none')
         .attr('stroke', 'green')
         .attr('stroke-width', 3)
+    }*/
 
-    }
-
-    let geoJson = d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json")
+    let geoJson = d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
     geoJson.then(ready)
     
     function ready(json){
         shapes = json;
         initRange()
-        update(shapes, worldBankReq[keys[0]])
+        update(shapes, worldBankReq[keys[0]], keys[0])
+        var thesource = document.getElementsByClassName('mapInfoDisplay')[0]
+        var btn = document.createElement('button');
+        btn.addEventListener('click', downloadCanvas(update, shapes, worldBankReq, keys))
+        thesource.appendChild(btn)
     }
 
     function initRange(){
-        let map = d3.select('#maps')
         console.log(worldBankReq)
-       /* let rangeU = map.select('input').data([worldBankReq]);
-
+        let map = d3.select('#maps')
+        let rangeU = map.selectAll('input.yearSpan').data([worldBankReq]);
         let rangeEnter = rangeU.enter().append('input')
+        
+
+        rangeEnter.merge(rangeU)
+        .attr("class", "yearSpan")
         .attr('type', 'range')
         .attr('max', function(d){return Math.max(...Object.keys(d))})
         .attr('min', function(d){return Math.min(...Object.keys(d))})
-        .on('input', callback)*/
-
-
-        let range = map.append('input')
-        .attr('type', 'range')
-        .attr('max', Math.max(...Object.keys(worldBankReq)))
-        .attr('min', Math.min(...Object.keys(worldBankReq)))
+        .property('value', function(d){return Math.min(...Object.keys(d))})
         .on('input', callback)
-   
+        
+
         function callback(d, i){
           let value = this.value;
           let dataArr = worldBankReq[value];
           console.log(dataArr)
-          update(shapes, dataArr)
+          update(shapes, dataArr, value)
         }
     }
 
-    function update(shapes, data){
-        let prueba = topojson.feature(shapes, shapes.objects.countries);
-        console.log(data, prueba)
-
+    function update(shapes, data, year){
         let FilteredData = [...new Set(data.map(ele => ele[1]))].sort((a,b) => a - b) 
-        console.log(FilteredData)
         //Scale domain
         let domain = (function(){
-            let FilteredData = [...new Set(data.map(ele => ele[1]))].sort((a,b) => a - b) 
-
             if(FilteredData.length > 7){
                 let domain = ss.ckmeans(FilteredData, 8).map(cluster => cluster[0]);
                 domain.pop();
@@ -135,7 +136,9 @@ function vectorChart(worldBankReq, googleApiOptions){
             }
            
             else{
-                return FilteredData
+                let domain = [...FilteredData]
+                domain.shift()
+                return domain
             }
         })()
 
@@ -147,7 +150,7 @@ function vectorChart(worldBankReq, googleApiOptions){
         //Tooltips
         let tip = d3.tip()
         .attr('class', 'd3-tip')
-        tip.offset(function(){
+        .offset(function(){
             return [this.getBBox().height / 2, 0]
         })
         .html(function(d) {
@@ -160,18 +163,7 @@ function vectorChart(worldBankReq, googleApiOptions){
         let u = d3.select('g.map')
         .selectAll('path')
         .data(topojson.feature(shapes, shapes.objects.countries).features)
-
-        //comparission
-        function compare(){
-           let dataMap = data.map(e => e[0])
-           let shapesMap = prueba.features.map(e => e.properties.name)
-           let filter = dataMap.filter(e => shapesMap.indexOf(e) == -1)
-           return filter
-        }
-
-        console.log(compare())
-        
-        console.log(prueba)
+      
         u.enter()
         .append('path')
         .merge(u)
@@ -188,9 +180,9 @@ function vectorChart(worldBankReq, googleApiOptions){
         let legend_labels = (function(){
             let labels = [];
             if(FilteredData.length <= 7 ){
-                for(let i = 0; i < domain.length; i++){
-                    labels.push([`${domain[i]}`,
-                    d3.schemeBlues[7][i]])
+                for(let i = 0; i < FilteredData.length; i++){
+                    labels.push([`${FilteredData[i]}`,
+                    colorScale(FilteredData[i])])
                 }
             }
             else{
@@ -217,46 +209,76 @@ function vectorChart(worldBankReq, googleApiOptions){
         })()
         console.log(legend_labels, domain,d3.schemeBlues[7])
         
-        //legend group
+        //legend 
         var ls_w = 20, ls_h = 20;
-        let legend = svg.selectAll("g.legend")
+
+        //legend container
+        let legendContainer = svg.selectAll('g.legendContainer').data([data])
+        
+        let legendContainerEnter = legendContainer.enter().append('g')
+        .classed('legendContainer', true)
+        .merge(legendContainer)
+        .attr('transform', `translate(0, -100)`)
+        .attr('stroke', 'black')
+        .attr('stroke-width', 1)
+
+        let containerBorder = legendContainerEnter.selectAll('rect.border').data([legend_labels.length]);
+
+        let containerBorderEnter = containerBorder.enter().append('rect')
+        .classed('border', true)
+        .merge(containerBorder)
+        .attr('height', 200)
+        .attr('width', 200)
+        .attr('fill', 'none')
+        .attr('stroke', "black")
+        .attr('stroke-width', 1 )
+        .attr('transform', (d,i) => `translate(${50},${height - (d*ls_h) - ls_h - 4})`)
+
+        
+        //legend metadata
+        let metaData = legendContainerEnter.selectAll('text.metaData').data([IndicatorMetaData]);
+        
+        let metaDataEnter = metaData.enter().append('text')
+        .classed('metaData', true)
+        .merge(metaData)
+        .text(d => `${d.name} year:${year}`)
+        .attr('transform', (d,i) => `translate(${50},${height - (8 * ls_h) - ls_h - 4})`)
+        .attr("dominant-baseline", "text-before-edge");
+
+
+        //legend groups
+        let legend = legendContainerEnter.selectAll("g.legend")
         .data(legend_labels)
         
-        let legendEnter = 
-        legend.enter()
-        .append("g")
-        .attr("class", "legend");
-        
-        let legendMerge = legendEnter.merge(legend)
+        let legendEnter = legend.enter().append("g")
+        .attr("class", "legend")
+        .merge(legend)
         .attr('transform', (d,i) => `translate(${50},${height - (i*ls_h) - ls_h - 4})`)
         
         legend.exit().remove()
 
         //legend text
-        let textLegend = legendMerge.selectAll('text').data(function(d){
+        let textLegend = legendEnter.selectAll('text').data(function(d){
             console.log(d)
             return [d[0]]})
 
         let textLegendEnter = 
         textLegend.enter()
-        .append("text");
-        var ls_w = 20, ls_h = 20;
-
-        textLegendEnter.merge(textLegend)
+        .append("text")
+        .merge(textLegend)
         .text(function(d,i){return d})
         .attr('x', 50)
         .attr('y', 0)
         .attr("dominant-baseline", "text-before-edge");
 
         //legend color
-        let colorLegend = legendMerge.selectAll('rect').data(function(d,i){
+        let colorLegend = legendEnter.selectAll('rect').data(function(d,i){
             return [d[1]]
         })
 
         let colorLegendEnter = colorLegend.enter()
         .append("rect")
-
-        colorLegend.merge(colorLegendEnter)
+        .merge(colorLegend)
         .style("fill", function(d,i){
             return d
         })
@@ -264,6 +286,21 @@ function vectorChart(worldBankReq, googleApiOptions){
         .attr("height", ls_h)
         .attr('x', 20)
         .attr('y', 0)  
+    
+        //d3 zoom
+        const zoom = d3.zoom()
+        .scaleExtent([1, 8])
+        .on('zoom', zoomed);
+
+        function zoomed() {
+            d3.select('g.map')
+            .selectAll('path') // To prevent stroke width from scaling
+            .attr('transform', d3.event.transform);
+          }
+        svg.call(zoom)
+
+        let newSvg = document.getElementById('svg')
+        return newSvg
 
     } 
 }
@@ -273,9 +310,21 @@ function handler(worldBankReq, googleApiOptions){
     const response = worldBankReq;
     console.log(worldBankReq)
     const finalreg = /(^[^\n\(\)]+(?:\([^\n\(\)]+\))*)\s*(\([^\n]+\))|[^\n]+$/i
-    const IndicatorMetaData = response[0].indicator.value.match(finalreg);
+    const IndicatorMetaData = (function(){
+        let responseData = response.find(e => e.indicator.value)
+
+        if(responseData){
+            return {
+                date: responseData.date,
+                name: responseData.indicator.value
+            }
+        }
+        else{
+            return undefined
+        }
+    })()
+    //response[0].indicator.value.match(finalreg);
     console.log(response[0].indicator.value)
-    const IndicatorDescription =  IndicatorMetaData[2];
     const maps = document.getElementById('maps');
 
     const dataSet = (function(){
@@ -326,8 +375,7 @@ function handler(worldBankReq, googleApiOptions){
 
     console.log(dataSet)
 
-    let mapContainers = [];
-    vectorChart(dataSet, IndicatorDescription, mapContainers, googleApiOptions)
+    vectorChart(dataSet, IndicatorMetaData, googleApiOptions)
 }
 
 

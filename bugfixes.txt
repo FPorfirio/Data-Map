@@ -1,8 +1,11 @@
 1)fix geojson countries id property mismatching data id properties - fixed
 2)fix exit selections in map's legend - fixed
-3)fix range control duplicate on new submit
+3)fix range control duplicate on new submit - fixed
 4)fix logic flow to number of legend labels generated - fixed
 5)Create economic bloc and subcontinents shapes and objects
 6)Css styles
 7)fix indicator html selection - fixed
 8)fix round values in % indicators - fixed
+9)fix year values and add dataset source and page source to the legend box
+10)
+ ogr2ogr -f 'ESRI Shapefile' -t_srs 'EPSG:3395' shit.shp ne_50m_admin_0_countries.shp
