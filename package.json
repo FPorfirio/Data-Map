@@ -17,7 +17,11 @@
   },
   "homepage": "https://github.com/FPorfirio/Data-Map#readme",
   "devDependencies": {
-    "webpack": "^4.12.0",
+    "webpack": "^4.41.6",
     "webpack-cli": "^3.0.6"
+  },
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "tail.select": "^0.5.15"
   }
 }

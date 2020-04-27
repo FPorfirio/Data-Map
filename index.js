@@ -1,6 +1,7 @@
 import { indicators } from './world-bank.js'
 import {isoJson, isoContinents, isoSubContinents} from './country_iso_codes.js'
-console.log(Object.keys(indicators)[0])
+import dlmenu from './menu.js';
+console.log(indicators)
 const mainClass = document.getElementsByClassName('selectors')[0];
 const inputs = document.getElementsByClassName('form')[0].children;
 
@@ -10,53 +11,99 @@ const inputs = document.getElementsByClassName('form')[0].children;
 
 const addIndicators = (function(){
     
+    const indicatorBox = document.createElement('div')
+    indicatorBox.classList.add('dl-menuwrapper')
+    //indicatorBox.classList.add()
+    //indicatorBox.addEventListener('click', indicatorContainerCallback)
+
+
+    const indicatorBoxBtn = document.createElement('button')
+    indicatorBox.appendChild(indicatorBoxBtn)
+    indicatorBoxBtn.textContent = "Select an indicator";
+    indicatorBoxBtn.classList.add('dl-trigger')
+    //indicatorBoxBtn.addEventListener("click", (e)=>{
+    //    e.target.nextElementSibling.classList.toggle('indicatorBox_ul--menu')
+    //})
+
     const indicatorsContainer = document.createElement('ul');
-    indicatorsContainer.addEventListener('click', indicatorContainerCallback)
+    indicatorsContainer.classList.add('dl-menu')
+    indicatorBox.appendChild(indicatorsContainer)   
+
     indicators.forEach((group) => {
         const groupLi = document.createElement('li')
+        groupLi.classList.add('indicatorBox_li')
+        indicatorsContainer.appendChild(groupLi); 
+
         const groupElement = document.createElement('ul')
+        groupElement.classList.add('menuwrapper_submenu')
+        groupLi.appendChild(groupElement);
+
         const groupName = document.createElement('li');
-        groupName.classList.add('title')
+        //groupName.classList.add('indicatorBox_li')
+        groupElement.appendChild(groupName);
+
+        const groupNameBtn = document.createElement('button');
+        groupNameBtn.classList.add('title','indicatorBox_button')
+        groupName.appendChild(groupNameBtn)
+        //groupName.classList.add('title')
 
         const groupContentLi = document.createElement('li')
-        groupContentLi.classList.add('closed')
+        //groupContentLi.classList.add('indicatorBox_li')
+        //groupContentLi.classList.add('closed')
+        groupElement.appendChild(groupContentLi);
 
         const groupContentUl = document.createElement('ul');
+        groupContentUl.classList.add('dl-submenu')
+        groupContentLi.appendChild(groupContentUl);
+
         const name = Object.keys(group)[0];
         const groupValues = group[name];
-        groupName.textContent = name;
+        groupNameBtn.textContent = name;
 
         groupValues.forEach( ele => {
-            const subgroupName = document.createElement('li');
-            subgroupName.classList.add('title')
+            const subGroupLi = document.createElement('li');
+            subGroupLi.classList.add('indicatorBox_li')
+            groupContentUl.appendChild(subGroupLi);
 
-            const sugbroupContent = document.createElement('li');
-            sugbroupContent.classList.add('closed')
+            const subGroupUl = document.createElement('ul')
+            subGroupUl.classList.add('menuwrapper_submenu')
+            subGroupLi.appendChild(subGroupUl)
+
+            const subGroupName = document.createElement('li')
+            //subGroupName.classList.add('indicatorBox_li')
+            subGroupUl.appendChild(subGroupName)
+
+            const subGroupNameBtn = document.createElement('button')
+            subGroupNameBtn.classList.add('title','indicatorBox_button');
+            subGroupName.appendChild(subGroupNameBtn)
+
+            const subGroupContentLi = document.createElement('li');
+            //subGroupContentLi.classList.add('indicatorBox_li')
+            //subGroupContentLi.classList.add('closed')
+            subGroupUl.appendChild(subGroupContentLi)
 
             const subgroupContentUl = document.createElement('ul');
+            subgroupContentUl.classList.add('dl-submenu')
+            subGroupContentLi.appendChild(subgroupContentUl);
+
             const name = Object.keys(ele)[0];
             const subgroupValues = ele[name]
-            subgroupName.textContent = name;
+            subGroupNameBtn.textContent = name;
 
             subgroupValues.forEach( ele => {
                 const indicator = document.createElement('li');
-                const indicatorRegexp = /(?<=\()[^\n\(\)]+(?=\)\n{0,1}$)/gi;
-                indicator.textContent = ele;
-                indicator.dataset.id = ele.match(indicatorRegexp)
-                subgroupContentUl.appendChild(indicator);
-                indicator.addEventListener('click', indicatorCallback)
-            })
-            
+                indicator.classList.add('indicatorBox_li')
 
-            sugbroupContent.appendChild(subgroupContentUl);
-            groupContentUl.appendChild(subgroupName);
-            groupContentUl.appendChild(sugbroupContent);
-            groupContentLi.appendChild(groupContentUl);
-            groupElement.appendChild(groupName);
-            groupElement.appendChild(groupContentLi);
-            groupLi.appendChild(groupElement);
+                const indicatorBtn = document.createElement('button')
+                indicator.appendChild(indicatorBtn)
+                subgroupContentUl.appendChild(indicator);
+
+                const indicatorRegexp = /(?<=\()[^\n\(\)]+(?=\)\n{0,1}$)/gi;
+                indicatorBtn.textContent = ele;
+                indicatorBtn.dataset.id = ele.match(indicatorRegexp)
+                indicatorBtn.addEventListener('click', indicatorCallback)
+            })
         })
-        indicatorsContainer.appendChild(groupLi);    
     });
 
     //Populate input field according to the indicator selected
@@ -79,11 +126,14 @@ const addIndicators = (function(){
     //Control the display of indicators interface lists
     function indicatorContainerCallback(e){
         if(e.target.classList.contains('title')){
-            var ele = e.target.nextElementSibling
+            var ele = e.target.parentElement.nextElementSibling
             ele.classList.toggle('closed')
         }
     }
-    mainClass.appendChild(indicatorsContainer);
+    mainClass.appendChild(indicatorBox);
+    dlmenu(indicatorBox, {
+        animationClasses : { classin : 'dl-animate-in-5', classout : 'dl-animate-out-5' }
+    })
 })()
 
 

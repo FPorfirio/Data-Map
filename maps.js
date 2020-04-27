@@ -1,6 +1,8 @@
-import {worldBankFix,fixCountryNames} from "./countryNameFix.js"
+import {wrap,fixCountryNames} from "./countryNameFix.js"
 import downloadCanvas from "./svgDownload.js"
-//Calling world-bank Api
+import debounce from "../lodash-es/debounce.js"
+
+
 function API_request(url) {       
     return new Promise((resolve, reject) => {
         var req = new XMLHttpRequest;
@@ -218,7 +220,7 @@ function vectorChart(worldBankReq, IndicatorMetaData, googleApiOptions){
         let legendContainerEnter = legendContainer.enter().append('g')
         .classed('legendContainer', true)
         .merge(legendContainer)
-        .attr('transform', `translate(0, -100)`)
+        .attr('transform', `translate(50, 400)`)
         .attr('stroke', 'black')
         .attr('stroke-width', 1)
 
@@ -227,25 +229,34 @@ function vectorChart(worldBankReq, IndicatorMetaData, googleApiOptions){
         let containerBorderEnter = containerBorder.enter().append('rect')
         .classed('border', true)
         .merge(containerBorder)
-        .attr('height', 200)
+        .attr('height', legend_labels.length * ls_h + 40)
         .attr('width', 200)
         .attr('fill', 'none')
         .attr('stroke', "black")
         .attr('stroke-width', 1 )
-        .attr('transform', (d,i) => `translate(${50},${height - (d*ls_h) - ls_h - 4})`)
-
         
         //legend metadata
-        let metaData = legendContainerEnter.selectAll('text.metaData').data([IndicatorMetaData]);
+        var txtWrap = d3plus.textWrap().fontFamily('arial').fontSize(17).width(250)(IndicatorMetaData.name)
+
+        let indicatorName = legendContainerEnter.selectAll('text.indicatorName').data(txtWrap.lines);
         
-        let metaDataEnter = metaData.enter().append('text')
-        .classed('metaData', true)
-        .merge(metaData)
-        .text(d => `${d.name} year:${year}`)
-        .attr('transform', (d,i) => `translate(${50},${height - (8 * ls_h) - ls_h - 4})`)
-        .attr("dominant-baseline", "text-before-edge");
+        let indicatorNameEnter = indicatorName.enter().append('text')
+        .classed('indicatorName', true)
+        .merge(indicatorName)
+        .text(d => d)
+        .attr('y', (d,i) => i * 17 - (17 * txtWrap.lines.length))
 
+        indicatorName.exit().remove();
 
+        let indicatorYear = legendContainerEnter.selectAll('text.indicatorYear').data([year]);
+
+        let indicatorYearEnter = indicatorYear.enter().append('text')
+        .classed('indicatorYear', true)
+        .merge(indicatorYear)
+        .text(d => d)
+        .attr('transform',(d,i) => `translate(${0},${legend_labels.length * ls_h + 40 })`)
+
+                      
         //legend groups
         let legend = legendContainerEnter.selectAll("g.legend")
         .data(legend_labels)
@@ -253,7 +264,7 @@ function vectorChart(worldBankReq, IndicatorMetaData, googleApiOptions){
         let legendEnter = legend.enter().append("g")
         .attr("class", "legend")
         .merge(legend)
-        .attr('transform', (d,i) => `translate(${50},${height - (i*ls_h) - ls_h - 4})`)
+        .attr('transform', (d,i) => `translate(${0},${legend_labels.length * ls_h - (i * ls_h) })`)
         
         legend.exit().remove()
 
