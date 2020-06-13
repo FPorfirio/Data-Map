@@ -1,29 +1,123 @@
-import { indicators } from './world-bank.js'
-import {isoJson, isoContinents, isoSubContinents} from './country_iso_codes.js'
-import dlmenu from './menu.js';
+import indicators  from './world-bank.js'
 console.log(indicators)
+import area from './country_iso_codes.js'
+import dlmenu from './menu.js';
+console.log(area)
 const mainClass = document.getElementsByClassName('selectors')[0];
 const inputs = document.getElementsByClassName('form')[0].children;
+console.log(area)
 
 
+const SeachBar = (function(){
+    const searchBox = document.createElement('div');  
 
+    const search = document.createElement('input');
+    search.type = "search";
+    searchBox.appendChild(search)
+
+    const select = document.createElement('select');
+    searchBox.appendChild(select)
+
+    function SearchArea(obj, word, options = {}, group = []){
+        console.log(indicators)
+        word = word
+        for(let prop in obj){
+            let key = Object.keys([obj[prop][0]])[0]
+
+            if(typeof key != "string"){
+                group.push(prop);
+                SearchArea(obj[prop], word, options, group);
+                group = [];
+            }
+            else{
+                let regex = new RegExp(`${word}`, 'ig');
+                    
+                let filtered = obj[prop].filter(function(item){
+                        let value = item.name ? item.name : item.Name;
+                        return regex.test(value)
+                    });
+
+                filtered.forEach((item) => {
+                        let value = item.name ? item.name : item.Name;
+                        let textContent = item.countriesCode ? item.countriesCode : item.Code;
+                        options[textContent] = {
+                            group: group.join('-') + prop,
+                            value,
+                        }
+                    }) 
+            }
+        }
+        return options
+    }
+
+    function searchIndicator(arr, word, options = {}, group = []){
+        word = word
+        arr.forEach((item)=>{
+            let key = Object.keys(item)[0];
+        
+            if(typeof item[key][0] != "string" ){
+                group.push(key);
+                searchIndicator(item[key], word, options, group);
+                group = [];               
+            }
+            else{
+                let index = group.indexOf(key);
+                let filtered = item[key].filter(function(item){
+                    return item.includes(word)
+                });
+                filtered.forEach((item) => {
+                    let value = item;
+                    options[value] = {
+                        group: group.join('-') + ' ' + key,
+                        value,
+                        p: 'shit'
+                    }
+                    
+                });    
+            }
+        })
+        return options;
+    }
+
+    return function(e){
+        let element = e.target;
+        element.insertAdjacentElement('afterend', searchBox);
+        search.value = ""
+        const tailSelect = tail.select(select, {multiple: true, items: {}})
+        tailSelect.config('items', {});
+
+        if(element.textContent.includes('area')){
+            search.addEventListener('input', (e) => {
+                tailSelect.config('items', SearchArea(area, e.target.value));
+                tailSelect.on('change', (item, state) => {
+                    console.log(item,state)
+                })
+            })
+        }
+        else if(element.textContent.includes('indicator')){
+            search.addEventListener('input', (e) => {
+                tailSelect.config('items', searchIndicator(indicators, e.target.value));
+                tailSelect.on('change', (item, state) => {
+                    console.log(item,state)
+                })
+            })
+        }
+    }
+})()
 
 
 const addIndicators = (function(){
     
     const indicatorBox = document.createElement('div')
     indicatorBox.classList.add('dl-menuwrapper')
-    //indicatorBox.classList.add()
-    //indicatorBox.addEventListener('click', indicatorContainerCallback)
 
+    const select = document.createElement('select');
 
     const indicatorBoxBtn = document.createElement('button')
     indicatorBox.appendChild(indicatorBoxBtn)
     indicatorBoxBtn.textContent = "Select an indicator";
     indicatorBoxBtn.classList.add('dl-trigger')
-    //indicatorBoxBtn.addEventListener("click", (e)=>{
-    //    e.target.nextElementSibling.classList.toggle('indicatorBox_ul--menu')
-    //})
+    indicatorBoxBtn.addEventListener('click', SeachBar);
 
     const indicatorsContainer = document.createElement('ul');
     indicatorsContainer.classList.add('dl-menu')
@@ -39,17 +133,13 @@ const addIndicators = (function(){
         groupLi.appendChild(groupElement);
 
         const groupName = document.createElement('li');
-        //groupName.classList.add('indicatorBox_li')
         groupElement.appendChild(groupName);
 
         const groupNameBtn = document.createElement('button');
         groupNameBtn.classList.add('title','indicatorBox_button')
         groupName.appendChild(groupNameBtn)
-        //groupName.classList.add('title')
 
         const groupContentLi = document.createElement('li')
-        //groupContentLi.classList.add('indicatorBox_li')
-        //groupContentLi.classList.add('closed')
         groupElement.appendChild(groupContentLi);
 
         const groupContentUl = document.createElement('ul');
@@ -70,39 +160,54 @@ const addIndicators = (function(){
             subGroupLi.appendChild(subGroupUl)
 
             const subGroupName = document.createElement('li')
-            //subGroupName.classList.add('indicatorBox_li')
             subGroupUl.appendChild(subGroupName)
 
             const subGroupNameBtn = document.createElement('button')
             subGroupNameBtn.classList.add('title','indicatorBox_button');
+            subGroupNameBtn.addEventListener('click', btnCallback);
             subGroupName.appendChild(subGroupNameBtn)
 
             const subGroupContentLi = document.createElement('li');
-            //subGroupContentLi.classList.add('indicatorBox_li')
-            //subGroupContentLi.classList.add('closed')
             subGroupUl.appendChild(subGroupContentLi)
 
             const subgroupContentUl = document.createElement('ul');
             subgroupContentUl.classList.add('dl-submenu')
             subGroupContentLi.appendChild(subgroupContentUl);
 
+            const indicator = document.createElement('li');
+            indicator.classList.add('indicatorBox_li');
+            subgroupContentUl.appendChild(indicator);
+            
             const name = Object.keys(ele)[0];
             const subgroupValues = ele[name]
             subGroupNameBtn.textContent = name;
 
-            subgroupValues.forEach( ele => {
-                const indicator = document.createElement('li');
-                indicator.classList.add('indicatorBox_li')
-
-                const indicatorBtn = document.createElement('button')
-                indicator.appendChild(indicatorBtn)
-                subgroupContentUl.appendChild(indicator);
-
-                const indicatorRegexp = /(?<=\()[^\n\(\)]+(?=\)\n{0,1}$)/gi;
-                indicatorBtn.textContent = ele;
-                indicatorBtn.dataset.id = ele.match(indicatorRegexp)
-                indicatorBtn.addEventListener('click', indicatorCallback)
-            })
+            function btnCallback(e){
+                while(select.firstElementChild){
+                    select.removeChild(select.firstElementChild);
+                }
+                let items = (function(){
+                    let groupobj = {};
+        
+                    subgroupValues.forEach((element) => {
+                        let value = element
+                        groupobj[value] = {
+                            value
+                        }
+                    });
+                    return groupobj
+                })();
+                indicator.appendChild(select);
+                const tailSelect = tail.select(select, {search: true});
+                tailSelect.on('change', (item, state) => {
+                    console.log(item,state)
+                })
+                tailSelect.config('items', items);
+                tailSelect.options.add('placeholder', 'select an indicator', '#', true, false, '', true);
+                tailSelect.options.handle('unselect','placeholder','#',true);
+                tailSelect.options.remove('placeholder','#',true);
+                tailSelect.updateLabel('Please select an indicator')
+            }
         })
     });
 
@@ -176,11 +281,143 @@ const addYears = (function(){
 
 //creating HTML elements for country selection
 const addCountries = (function(){
+    const indicatorBox = document.createElement('div')
+    indicatorBox.classList.add('dl-menuwrapper')
+
+    const indicatorBoxBtn = document.createElement('button')
+    indicatorBoxBtn.textContent = "Select an area";
+    indicatorBoxBtn.classList.add('dl-trigger');
+    indicatorBox.appendChild(indicatorBoxBtn);
+    indicatorBoxBtn.addEventListener('click', SeachBar)
+
+    //select.addEventListener('click', selectCallback);
+    const select = document.createElement('select');
+
+    const indicatorsContainer = document.createElement('ul');
+    indicatorsContainer.classList.add('dl-menu')
+    indicatorBox.appendChild(indicatorsContainer)   
+
+    for(let group in area){
+        const groupLi = document.createElement('li')
+        groupLi.classList.add('indicatorBox_li')
+        indicatorsContainer.appendChild(groupLi); 
+
+        const groupElement = document.createElement('ul')
+        groupElement.classList.add('menuwrapper_submenu')
+        groupLi.appendChild(groupElement);
+
+        const groupName = document.createElement('li');
+        groupElement.appendChild(groupName);
+
+        const groupNameBtn = document.createElement('button');
+        groupNameBtn.classList.add('title','indicatorBox_button')
+        groupName.appendChild(groupNameBtn)
+        groupNameBtn.addEventListener('click', groupBtnCallback);
+
+
+        const groupContentLi = document.createElement('li');
+        groupElement.appendChild(groupContentLi);
+
+        const groupContentUl = document.createElement('ul');
+        groupContentUl.classList.add('dl-submenu');
+        groupContentLi.appendChild(groupContentUl); 
+        groupNameBtn.textContent = group;
+
+        let areaLi = document.createElement('li');
+        areaLi.classList.add('indicatorBox_li');
+        groupContentUl.appendChild(areaLi);
+
+
+            /*tailSelect.options.add('placeholder', 'select an indicator', '#', true, false, '', true);
+            tailSelect.options.handle('unselect','placeholder','#',true);
+            tailSelect.options.remove('placeholder','#',true);*/
+    }
+    function groupBtnCallback(e){
+        while(select.firstElementChild){
+            select.removeChild(select.firstElementChild);
+        }
+
+        let items = (function(){
+            let groupobj = {};
+
+            area[e.target.textContent].forEach((element) => {
+                let value = element.name ? element.name : element.Name;
+                let textContent = element.countriesCode ? element.countriesCode : element.Code;
+                groupobj[textContent] = {
+                    value
+                }
+            });
+            return groupobj
+        })();
+        /* ---fix tail select menu
+            var clone = this.select.cloneNode(true), height = this.con.height, search = 0,
+                inner = this.dropdown.querySelector(".dropdown-inner");
+            // Calculate Dropdown Height
+            clone = this.select.cloneNode(true);
+            let cloneDropdown = clone.querySelector('.select-dropdown')
+            cloneDropdown.style.cssText = "height:auto;min-height:auto;max-height:none;opacity:0;display:block;visibility:hidden;";
+            cloneDropdown.style.maxHeight = this.con.height + "px";
+            cloneDropdown.className += " cloned";
+            document.body.appendChild(clone);
+            height = (height > cloneDropdown.clientHeight)? cloneDropdown.clientHeight: height;
+            if(this.con.search){
+                search = clone.querySelector(".dropdown-search").clientHeight;
+            }
+            document.body.removeChild(clone);
+        */
+        e.target.parentElement.nextElementSibling.firstChild.querySelector('.indicatorBox_li').appendChild(select);
+        const tailSelect = tail.select(select, {animate: false, startOpen: true, multiPinSelected:true, search: true, multiple: true});
+        tailSelect.config('items', items);
+        tailSelect.options.all('unselected','#');
+        tailSelect.select.addEventListener('click', (e) =>{
+            if(e.target.classList.contains('dropdown-option')){
+                if(tailSelect.options.is('select', e.target.dataset.key, '#')){
+                    inputs[3].value = inputs[3].value + e.target.dataset.key;
+                    const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul');
+                    const li = document.createElement('li');
+                    li.classList.add('countries')
+                    li.dataset.id = e.target.dataset.key;
+                    li.textContent = e.target.textContent
+                    CountryContainer.appendChild(li);
+                }
+                else{
+                    const countryValue = e.target.dataset.key;
+                    const regexp = new RegExp(countryValue);
+                    const updatedInput = inputs[3].value.replace(regexp, "");
+                    inputs[3].value = updatedInput;
+                    const li = document.querySelector(`.mapInfoDisplay .countriesBox ul li[data-id=${e.target.dataset.key}]`);
+                    li.remove();
+                }
+            }
+        });
+        window.setTimeout((e)=>{
+            tailSelect.config('animate', true, false);
+        })
+    }
+
+    /*function selectCallback(e){
+        inputs[3].value = inputs[3].value + e.target.value;
+        console.log(e.target.dataset.iso)
+        console.log(inputs);
+
+        const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul');
+        const li = document.createElement('li');
+        li.classList.add('countries')
+        li.dataset.id = e.target.value;
+        li.textContent = e.target.options[e.target.selectedIndex].textContent;
+        CountryContainer.appendChild(li);
+    }*/
+
+    mainClass.appendChild(indicatorBox)
+    dlmenu(indicatorBox, {
+        animationClasses : { classin : 'dl-animate-in-5', classout : 'dl-animate-out-5' }
+    })
+    /*
     const selectCountries = document.createElement('select')
-    for(let i = 0; i < 249; i++){
+    for(let i = 0; i < area.isoJson.length; i++){
         let option = document.createElement('option');
-        option.textContent = isoJson[i].Name;
-        option.value = isoJson[i].Code;
+        option.textContent = area.isoJson[i].Name;
+        option.value = area.isoJson[i].Code;
         selectCountries.appendChild(option);
     }
     selectCountries.addEventListener('change', countryCallback);
@@ -193,7 +430,7 @@ const addCountries = (function(){
     optionDefault.textContent = 'please select a continent'
     selectContinent.appendChild(optionDefault)
 
-    isoContinents.forEach(continent => {
+    area.isoContinents.forEach(continent => {
         let option = document.createElement('option');
         option.textContent = continent.name;
         option.value = continent.countriesCode;
@@ -219,7 +456,7 @@ const addCountries = (function(){
   
     mainClass.appendChild(selectContinent)
 
-    
+    */
 })()
 
 //creating HTML elements for mode selection

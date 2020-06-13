@@ -103,10 +103,10 @@ DLMenu.prototype = {
         self.menu.addEventListener('click', function(event){
             event.stopPropagation();
             let item = event.target
-
+            console.log(item)
             if (!item.parentElement.classList.contains('dl-back')){
-                let submenu = item.parentElement.nextElementSibling.firstChild;
-                if(submenu.classList.contains('dl-submenu')){
+                if(item.parentElement.nextElementSibling.tagName != 'DIV'){
+                    let submenu = item.parentElement.nextElementSibling.firstChild;
                     let subMenuClone = submenu.cloneNode(true);
                     subMenuClone.style.opacity = 0;
                     self.menu.insertAdjacentElement('afterend', subMenuClone);
@@ -138,7 +138,6 @@ DLMenu.prototype = {
 
                 }
                 else{
-                    self._closeMenu(); 
                 }
             }
             else{
@@ -223,7 +222,7 @@ DLMenu.prototype = {
         let self = this;
         self.menu.classList.remove( 'dl-subview' );
        
-        [...document.querySelectorAll('.dl-subview'),...document.querySelectorAll('.dl-subviewopen')]
+        [...self.menu.querySelectorAll('.dl-subview'),...self.menu.querySelectorAll('.dl-subviewopen')]
         .forEach((item) => {
             if(item.classList.contains('dl-subview')){
                 item.classList.remove('dl-subview')

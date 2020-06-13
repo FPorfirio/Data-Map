@@ -931,4 +931,4 @@ let indicators = (function(){
     return statics;
 })()
 
-export {indicators}
+export default indicators
