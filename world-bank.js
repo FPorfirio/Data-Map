@@ -129,23 +129,23 @@ const indicatorsID = `
     Labor force, female (% of total labor force) (SL.TLF.TOTL.FE.ZS)
 
     2.3Employment by sector
-    Employment in agriculture, male (% of male employment) (modeled ILO estimate) (SL.AGR.EMPL.MA.ZS),
-    Employment in agriculture, female (% of female employment) (modeled ILO estimate) (SL.AGR.EMPL.FE.ZS),
-    Employment in industry, male (% of male employment) (modeled ILO estimate) (SL.IND.EMPL.MA.ZS),
-    Employment in industry, female (% of female employment) (modeled ILO estimate) (SL.IND.EMPL.FE.ZS),
-    Employment in services, male (% of male employment) (modeled ILO estimate) (SL.SRV.EMPL.MA.ZS),
-    Employment in services, female (% of female employment) (modeled ILO estimate) (SL.SRV.EMPL.FE.ZS),
+    Employment in agriculture, male (% of male employment) (modeled ILO estimate) (SL.AGR.EMPL.MA.ZS)
+    Employment in agriculture, female (% of female employment) (modeled ILO estimate) (SL.AGR.EMPL.FE.ZS)
+    Employment in industry, male (% of male employment) (modeled ILO estimate) (SL.IND.EMPL.MA.ZS)
+    Employment in industry, female (% of female employment) (modeled ILO estimate) (SL.IND.EMPL.FE.ZS)
+    Employment in services, male (% of male employment) (modeled ILO estimate) (SL.SRV.EMPL.MA.ZS)
+    Employment in services, female (% of female employment) (modeled ILO estimate) (SL.SRV.EMPL.FE.ZS)
 
     2.4Decent work and productive employment
-    Employment to population ratio, 15+, total (%) (modeled ILO estimate) (SL.EMP.TOTL.SP.ZS),
-    Employment to population ratio, ages 15-24, total (%) (modeled ILO estimate) (SL.EMP.1524.SP.ZS),
-    Vulnerable employment, male (% of male employment) (modeled ILO estimate) (SL.EMP.VULN.MA.ZS),
-    Vulnerable employment, female (% of female employment) (modeled ILO estimate) (SL.EMP.VULN.FE.ZS),
-    GDP per person employed (constant 2011 PPP $) (SL.GDP.PCAP.EM.KD),
+    Employment to population ratio, 15+, total (%) (modeled ILO estimate) (SL.EMP.TOTL.SP.ZS)
+    Employment to population ratio, ages 15-24, total (%) (modeled ILO estimate) (SL.EMP.1524.SP.ZS)
+    Vulnerable employment, male (% of male employment) (modeled ILO estimate) (SL.EMP.VULN.MA.ZS)
+    Vulnerable employment, female (% of female employment) (modeled ILO estimate) (SL.EMP.VULN.FE.ZS)
+    GDP per person employed (constant 2011 PPP $) (SL.GDP.PCAP.EM.KD)
 
     2.5Unemployment
-    Unemployment, male (% of male labor force) (modeled ILO estimate) (SL.UEM.TOTL.MA.ZS),
-    Unemployment, female (% of female labor force) (modeled ILO estimate) (SL.UEM.TOTL.FE.ZS),
+    Unemployment, male (% of male labor force) (modeled ILO estimate) (SL.UEM.TOTL.MA.ZS)
+    Unemployment, female (% of female labor force) (modeled ILO estimate) (SL.UEM.TOTL.FE.ZS)
     Unemployment, youth male (% of male labor force ages 15-24) (modeled ILO estimate) (SL.UEM.1524.MA.ZS)
     Unemployment, youth female (% of female labor force ages 15-24) (modeled ILO estimate) (SL.UEM.1524.FE.ZS)
     Unemployment with basic education (% of total labor force with basic education) (SL.UEM.BASC.ZS)

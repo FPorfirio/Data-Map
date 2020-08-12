@@ -2,11 +2,67 @@ import indicators  from './world-bank.js'
 console.log(indicators)
 import area from './country_iso_codes.js'
 import dlmenu from './menu.js';
-console.log(area)
+import generateSelect from './selectGenerator.js';
+import getProp from '../lodash-es/merge.js';
+console.log(getProp)
+console.log(indicators)
 const mainClass = document.getElementsByClassName('selectors')[0];
 const inputs = document.getElementsByClassName('form')[0].children;
 console.log(area)
 
+function areaSelect(select, items){
+    const tailSelect = tail.select(select, {searchFocus: false, animate: false, startOpen: true, multiPinSelected:true, search: true, multiple: true});
+    tailSelect.config('items', items);
+    tailSelect.options.all('unselected','#');
+    const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul').children;
+    let keys = Object.keys(items)[0];
+    tailSelect.options.unselect(keys, items[keys].group)
+    let isSelected = Array.from(CountryContainer).forEach((e) => {
+        let group = (function(){
+            var keys = Object.keys(area)
+            
+            var keymatch = keys.find(ele =>{
+                let match = area[ele].some(elem => {
+                    return e.dataset.id == (elem.Code || elem.countriesCode)
+                })
+                console.log(area[ele])
+                return match
+            })
+            return keymatch
+        })()
+        console.log(group);
+        if(tailSelect.options.get(e.dataset.id, '#')){
+            tailSelect.options.select(e.dataset.id, '#')
+        }
+        else{
+            console.log('szhitfuck')
+            tailSelect.options.select(e.dataset.id, group)
+        }
+    });
+    tailSelect.select.addEventListener('click', (e) =>{
+        let group = e.target.dataset.group ? e.target.dataset.group : '#';
+        if(e.target.classList.contains('dropdown-option')){
+            if(tailSelect.options.is('select', e.target.dataset.key, group)){
+                inputs[3].value = inputs[3].value + e.target.dataset.key;
+                const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul');
+                const li = document.createElement('li');
+                li.classList.add('countries')
+                li.dataset.group = e.target.dataset.group
+                li.dataset.id = e.target.dataset.key;
+                li.textContent = e.target.textContent
+                CountryContainer.appendChild(li);
+            }
+            else{
+                const countryValue = e.target.dataset.key;
+                const regexp = new RegExp(countryValue);
+                const updatedInput = inputs[3].value.replace(regexp, "");
+                inputs[3].value = updatedInput;
+                const li = document.querySelector(`.mapInfoDisplay .countriesBox ul li[data-id=${e.target.dataset.key}]`);
+                li.remove();
+            }
+        }
+    });
+}
 
 const SeachBar = (function(){
     const searchBox = document.createElement('div');  
@@ -42,6 +98,7 @@ const SeachBar = (function(){
                         let textContent = item.countriesCode ? item.countriesCode : item.Code;
                         options[textContent] = {
                             group: group.join('-') + prop,
+                            category: "area",
                             value,
                         }
                     }) 
@@ -67,10 +124,11 @@ const SeachBar = (function(){
                 });
                 filtered.forEach((item) => {
                     let value = item;
-                    options[value] = {
+                    const indicatorRegexp = /(?<=\()[^\n\(\)]+(?=\)\n{0,1}$)/gi;
+                    options[item.match(indicatorRegexp)] = {
                         group: group.join('-') + ' ' + key,
+                        category: "indicator",
                         value,
-                        p: 'shit'
                     }
                     
                 });    
@@ -83,23 +141,19 @@ const SeachBar = (function(){
         let element = e.target;
         element.insertAdjacentElement('afterend', searchBox);
         search.value = ""
-        const tailSelect = tail.select(select, {multiple: true, items: {}})
-        tailSelect.config('items', {});
 
         if(element.textContent.includes('area')){
             search.addEventListener('input', (e) => {
-                tailSelect.config('items', SearchArea(area, e.target.value));
-                tailSelect.on('change', (item, state) => {
-                    console.log(item,state)
-                })
+                let options = SearchArea(area, e.target.value)
+                console.log(options)
+                generateSelect(select, options)
             })
+            
         }
         else if(element.textContent.includes('indicator')){
             search.addEventListener('input', (e) => {
-                tailSelect.config('items', searchIndicator(indicators, e.target.value));
-                tailSelect.on('change', (item, state) => {
-                    console.log(item,state)
-                })
+                let options = searchIndicator(indicators, e.target.value)
+                generateSelect(select, options)
             })
         }
     }
@@ -182,34 +236,73 @@ const addIndicators = (function(){
             const subgroupValues = ele[name]
             subGroupNameBtn.textContent = name;
 
-            function btnCallback(e){
-                while(select.firstElementChild){
-                    select.removeChild(select.firstElementChild);
-                }
-                let items = (function(){
-                    let groupobj = {};
-        
-                    subgroupValues.forEach((element) => {
-                        let value = element
-                        groupobj[value] = {
-                            value
-                        }
-                    });
-                    return groupobj
-                })();
-                indicator.appendChild(select);
-                const tailSelect = tail.select(select, {search: true});
-                tailSelect.on('change', (item, state) => {
-                    console.log(item,state)
-                })
-                tailSelect.config('items', items);
-                tailSelect.options.add('placeholder', 'select an indicator', '#', true, false, '', true);
-                tailSelect.options.handle('unselect','placeholder','#',true);
-                tailSelect.options.remove('placeholder','#',true);
-                tailSelect.updateLabel('Please select an indicator')
-            }
         })
     });
+    function indicatorSearch(indicators, indicator){
+        let result;
+        function searchLoop(indicators, indicator){
+            for(let item of indicators){
+
+                let key = Object.keys(item)[0];
+                if(key != indicator && typeof item[key][0] != "string"){
+                    console.log('why')
+                     searchLoop(item[key], indicator)
+                }
+                else if(indicator == key){
+                    const value = item[key]
+                    console.log(value)
+                    result = value;
+                    return;
+                }
+            }
+        }
+        searchLoop(indicators, indicator);
+        console.log(result)
+        return result;
+    }
+    function indicatsorSearch(indicators, indicator){  
+        for(let item of indicators){
+
+            let key = Object.keys(item)[0];
+            if(key != indicator && typeof item[key][0] != "string"){
+                console.log('why')
+                return indicatorSearch(item[key], indicator)
+            }
+            else if(indicator == key){
+                const value = item[key]
+                console.log(value)
+                return value
+            }
+        }
+    }
+
+    function btnCallback(e){
+        while(select.firstElementChild){
+            select.removeChild(select.firstElementChild);
+        }
+        
+        let items = (function(){
+            let groupobj = {};
+            const indicatorRegexp = /(?<=\()[^\n\(\)]+(?=\)\n{0,1}$)/gi;
+            
+            let blabla = indicatorSearch(indicators, e.target.textContent)
+            console.log(blabla)
+
+            indicatorSearch(indicators, e.target.textContent).forEach((element) => {
+                console.log(element)
+                console.log(element.match(indicatorRegexp))
+                let value = element
+                groupobj[element.match(indicatorRegexp)] = {
+                    category: 'indicator',
+                    value    
+                }
+            });
+            return groupobj
+        })();
+        console.log(items)
+        e.target.parentElement.nextElementSibling.firstChild.querySelector('.indicatorBox_li').appendChild(select);
+        generateSelect(select, items);
+    }
 
     //Populate input field according to the indicator selected
     function indicatorCallback(event){
@@ -245,16 +338,54 @@ const addIndicators = (function(){
 
 //Creating HTML elements for year selection
 const addYears = (function(){
-    const yearContainer = document.getElementsByClassName('yearBox__value');
-    let select = document.createElement('select');
-    console.log(yearContainer[0])
 
-    for(let i = 1960; i <= 2016; i++){
-        let option =  document.createElement('option');
-        option.value = i;
-        option.textContent = i;
-        select.appendChild(option);
+    const yearBox = document.createElement('div')
+    yearBox.classList.add('dl-menuwrapper')
+
+    const select = document.createElement('select');
+
+    const yearBoxBtn = document.createElement('button')
+    yearBoxBtn.textContent = "Select year or year span(optional)";
+    yearBoxBtn.classList.add('dl-trigger')
+    yearBoxBtn.addEventListener('click', btnCallback);
+    yearBox.appendChild(yearBoxBtn)
+
+
+    const yearsContainer = document.createElement('ul');
+    yearsContainer.classList.add('dl-menu');
+    yearBox.appendChild(yearsContainer); 
+
+    let yearLi = document.createElement('li');
+    yearLi.classList.add('indicatorBox_li');
+    yearsContainer.appendChild(yearLi);
+
+    function btnCallback(e){
+        while(select.firstElementChild){
+            select.removeChild(select.firstElementChild);
+        }
+
+        let items = (function(){
+            const groupobj = {};
+            for(let i = 1960; i <= 2016; i++){
+                const value = i;
+                const textContent = i;
+                groupobj[textContent] = {
+                    value,
+                    category: "year"
+
+                }
+            }
+            return groupobj
+        })();
+        console.log(e.target.nextElementSibling)
+        e.target.nextElementSibling.querySelector('.indicatorBox_li').appendChild(select);
+        generateSelect(select, items);
     }
+    mainClass.appendChild(yearBox);
+    dlmenu(yearBox, {
+        animationClasses : { classin : 'dl-animate-in-5', classout : 'dl-animate-out-5' }
+    })
+    /*
     select.addEventListener('change', yearCallback)
     mainClass.appendChild(select);
 
@@ -275,12 +406,13 @@ const addYears = (function(){
             inputs[2].value = yearValue;
             yearContainer[1].textContent = yearValue;
         }
-    }    
+    }    */
 })()
 
 
 //creating HTML elements for country selection
 const addCountries = (function(){
+    const areas = area;
     const indicatorBox = document.createElement('div')
     indicatorBox.classList.add('dl-menuwrapper')
 
@@ -290,7 +422,6 @@ const addCountries = (function(){
     indicatorBox.appendChild(indicatorBoxBtn);
     indicatorBoxBtn.addEventListener('click', SeachBar)
 
-    //select.addEventListener('click', selectCallback);
     const select = document.createElement('select');
 
     const indicatorsContainer = document.createElement('ul');
@@ -311,9 +442,8 @@ const addCountries = (function(){
 
         const groupNameBtn = document.createElement('button');
         groupNameBtn.classList.add('title','indicatorBox_button')
-        groupName.appendChild(groupNameBtn)
         groupNameBtn.addEventListener('click', groupBtnCallback);
-
+        groupName.appendChild(groupNameBtn)
 
         const groupContentLi = document.createElement('li');
         groupElement.appendChild(groupContentLi);
@@ -326,12 +456,8 @@ const addCountries = (function(){
         let areaLi = document.createElement('li');
         areaLi.classList.add('indicatorBox_li');
         groupContentUl.appendChild(areaLi);
-
-
-            /*tailSelect.options.add('placeholder', 'select an indicator', '#', true, false, '', true);
-            tailSelect.options.handle('unselect','placeholder','#',true);
-            tailSelect.options.remove('placeholder','#',true);*/
     }
+
     function groupBtnCallback(e){
         while(select.firstElementChild){
             select.removeChild(select.firstElementChild);
@@ -344,11 +470,14 @@ const addCountries = (function(){
                 let value = element.name ? element.name : element.Name;
                 let textContent = element.countriesCode ? element.countriesCode : element.Code;
                 groupobj[textContent] = {
+                    category: 'area',
                     value
                 }
             });
             return groupobj
         })();
+        e.target.parentElement.nextElementSibling.firstChild.querySelector('.indicatorBox_li').appendChild(select);
+        generateSelect(select, items);
         /* ---fix tail select menu
             var clone = this.select.cloneNode(true), height = this.con.height, search = 0,
                 inner = this.dropdown.querySelector(".dropdown-inner");
@@ -365,98 +494,14 @@ const addCountries = (function(){
             }
             document.body.removeChild(clone);
         */
-        e.target.parentElement.nextElementSibling.firstChild.querySelector('.indicatorBox_li').appendChild(select);
-        const tailSelect = tail.select(select, {animate: false, startOpen: true, multiPinSelected:true, search: true, multiple: true});
-        tailSelect.config('items', items);
-        tailSelect.options.all('unselected','#');
-        tailSelect.select.addEventListener('click', (e) =>{
-            if(e.target.classList.contains('dropdown-option')){
-                if(tailSelect.options.is('select', e.target.dataset.key, '#')){
-                    inputs[3].value = inputs[3].value + e.target.dataset.key;
-                    const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul');
-                    const li = document.createElement('li');
-                    li.classList.add('countries')
-                    li.dataset.id = e.target.dataset.key;
-                    li.textContent = e.target.textContent
-                    CountryContainer.appendChild(li);
-                }
-                else{
-                    const countryValue = e.target.dataset.key;
-                    const regexp = new RegExp(countryValue);
-                    const updatedInput = inputs[3].value.replace(regexp, "");
-                    inputs[3].value = updatedInput;
-                    const li = document.querySelector(`.mapInfoDisplay .countriesBox ul li[data-id=${e.target.dataset.key}]`);
-                    li.remove();
-                }
-            }
-        });
-        window.setTimeout((e)=>{
-            tailSelect.config('animate', true, false);
-        })
     }
 
-    /*function selectCallback(e){
-        inputs[3].value = inputs[3].value + e.target.value;
-        console.log(e.target.dataset.iso)
-        console.log(inputs);
-
-        const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul');
-        const li = document.createElement('li');
-        li.classList.add('countries')
-        li.dataset.id = e.target.value;
-        li.textContent = e.target.options[e.target.selectedIndex].textContent;
-        CountryContainer.appendChild(li);
-    }*/
+    
 
     mainClass.appendChild(indicatorBox)
     dlmenu(indicatorBox, {
         animationClasses : { classin : 'dl-animate-in-5', classout : 'dl-animate-out-5' }
     })
-    /*
-    const selectCountries = document.createElement('select')
-    for(let i = 0; i < area.isoJson.length; i++){
-        let option = document.createElement('option');
-        option.textContent = area.isoJson[i].Name;
-        option.value = area.isoJson[i].Code;
-        selectCountries.appendChild(option);
-    }
-    selectCountries.addEventListener('change', countryCallback);
-
-
-    const selectContinent = document.createElement('select');
-    const optionDefault = document.createElement('option')
-    optionDefault.selected = 'selected'
-    optionDefault.hidden = true;
-    optionDefault.textContent = 'please select a continent'
-    selectContinent.appendChild(optionDefault)
-
-    area.isoContinents.forEach(continent => {
-        let option = document.createElement('option');
-        option.textContent = continent.name;
-        option.value = continent.countriesCode;
-        option.dataset.isoCode = continent.code;
-        selectContinent.appendChild(option)
-    })
-    selectContinent.addEventListener('change', countryCallback)
-
-    function countryCallback(e){
-        inputs[3].value = inputs[3].value + e.target.value;
-        console.log(e.target.dataset.iso)
-        console.log(inputs);
-
-        const CountryContainer = document.querySelector('.mapInfoDisplay .countriesBox ul');
-        const li = document.createElement('li');
-        li.classList.add('countries')
-        li.dataset.id = e.target.value;
-        li.textContent = e.target.options[e.target.selectedIndex].textContent;
-        CountryContainer.appendChild(li);
-    }
-
-    mainClass.appendChild(selectCountries); 
-  
-    mainClass.appendChild(selectContinent)
-
-    */
 })()
 
 //creating HTML elements for mode selection
@@ -503,11 +548,11 @@ const mapInfo = (function(){
     const mapInfoDisplay = document.getElementsByClassName('mapInfoDisplay')[0]
    
     mapInfoDisplay.addEventListener('click', (e) => {
-        if(e.target.classList.contains('indicator')){
+        if(e.target.dataset.category == "indicator"){
             inputs[0].value = "";
             e.target.remove();
         }
-        if(e.target.classList.contains('yearBox__value')){
+        else if(e.target.classList.contains('yearBox__value')){
             const yearContainer = document.getElementsByClassName('yearBox__value');
             const dateValue = e.target.textContent;
             e.target.textContent = "";
@@ -518,14 +563,14 @@ const mapInfo = (function(){
                 inputs[2].value = "";
             }  
         }
-        if(e.target.classList.contains('countries')){
+        else if(e.target.dataset.category == "area"){
             const countryValue = e.target.dataset.id;
             const regexp = new RegExp(countryValue);
             const updatedInput = inputs[3].value.replace(regexp, "");
             inputs[3].value = updatedInput;
             e.target.remove()
         }     
-        if(e.target.classList.contains('mode')){
+        else if(e.target.classList.contains('mode')){
             inputs[4].value = '';
             e.target.remove();
         }

@@ -18,7 +18,7 @@
         <div class="selectors"></div>
         <div class="formContainer">
             <form class="form" action="" method="get">
-                <input type="hidden" name="indicatorID" required>
+                <input type="hidden" name="indicator" required>
                 <input type="hidden" name="yearFrom" required>
                 <input type="hidden" name="yearTo">
                 <input type="hidden" name="region" required>
@@ -33,13 +33,15 @@
                     <li>To:<span class="yearBox__value"></span></li>
                 </ul>
             </div>
-            <div class="countriesBox">
+            <div class="areaBox">
                 <ul>
                     
                 </ul>
             </div>
             <div class="indicatorBox">
-
+                <ul>
+                    
+                </ul>
             </div>
 
             <div class=modeBox>
@@ -71,14 +73,13 @@
     </footer>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://d3plus.org/js/d3plus-text.v0.9.full.min.js"></script>
-<script src="https://unpkg.com/tail.select@0.5.15/js/tail.select.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
 <script src="https://d3js.org/topojson.v2.min.js"></script>
 <script src="https://unpkg.com/simple-statistics@7.0.2/dist/simple-statistics.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
 <script src="https://unpkg.com/topojson@3"></script>
-
+<script src="../tail.select-master/js/tail.select-full.js"></script>
     <script src="./menuproto.js"></script>
     <script type="module"  src="./maps.js"></script>
     <script type="module"  src="./index.js"></script>
