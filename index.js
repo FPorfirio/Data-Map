@@ -90,7 +90,9 @@ const SeachBar = (function(){
                     
                 let filtered = obj[prop].filter(function(item){
                         let value = item.name ? item.name : item.Name;
-                        return regex.test(value)
+                        let result =  regex.test(value); 
+                        regex.lastIndex = 0;
+                        return result; 
                     });
 
                 filtered.forEach((item) => {
@@ -136,6 +138,7 @@ const SeachBar = (function(){
         })
         return options;
     }
+    console.log(SearchArea)
 
     return function(e){
         let element = e.target;
@@ -145,7 +148,7 @@ const SeachBar = (function(){
         if(element.textContent.includes('area')){
             search.addEventListener('input', (e) => {
                 let options = SearchArea(area, e.target.value)
-                console.log(options)
+                console.log(area)
                 generateSelect(select, options)
             })
             
@@ -280,7 +283,6 @@ const addIndicators = (function(){
         while(select.firstElementChild){
             select.removeChild(select.firstElementChild);
         }
-        
         let items = (function(){
             let groupobj = {};
             const indicatorRegexp = /(?<=\()[^\n\(\)]+(?=\)\n{0,1}$)/gi;
@@ -363,7 +365,6 @@ const addYears = (function(){
         while(select.firstElementChild){
             select.removeChild(select.firstElementChild);
         }
-
         let items = (function(){
             const groupobj = {};
             for(let i = 1960; i <= 2016; i++){
@@ -462,7 +463,6 @@ const addCountries = (function(){
         while(select.firstElementChild){
             select.removeChild(select.firstElementChild);
         }
-
         let items = (function(){
             let groupobj = {};
 
